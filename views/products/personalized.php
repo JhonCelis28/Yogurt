@@ -1,6 +1,6 @@
-<?php 
+<?php
 $title = 'Productos Personalizados';
-include 'views/layout/header.php'; 
+include 'views/layout/header.php';
 ?>
 
 <div class="container py-5">
@@ -18,28 +18,28 @@ include 'views/layout/header.php';
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-4">
-                        <img src="../yogurt1.jpg" 
-                             alt="Yogurt Personalizado" class="img-fluid rounded" style="height: 200px; object-fit: cover; box-shadow: 0 4px 8px rgba(0, 0, 0, 8);">
+                        <img src="../yogurt1.jpg"
+                            alt="Yogurt Personalizado" class="img-fluid rounded" style="height: 200px; object-fit: cover; box-shadow: 0 4px 8px rgba(0, 0, 0, 8);">
                     </div>
-                    
+
                     <form id="yogurtForm">
                         <input type="hidden" name="tipo_producto" value="yogurt">
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">Sabor *</label>
                             <div class="row g-2">
-                                <?php 
-                                $sabores = ['fresa', 'mora', 'mango', 'maracuya', 'natural'];
-                                foreach ($sabores as $sabor): 
+                                <?php
+                                $sabores = ['Natural', 'Arequipe', 'Café', 'Coco', 'Fresa', 'Guanábana', 'Kiwi', 'Limón', 'Lulo', 'Maracuyá', 'Melocotón', 'Mora', 'Piña'];
+                                foreach ($sabores as $sabor):
                                 ?>
-                                <div class="col-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="sabor" value="<?php echo $sabor; ?>" id="yogurt_<?php echo $sabor; ?>">
-                                        <label class="form-check-label" for="yogurt_<?php echo $sabor; ?>">
-                                            <?php echo ucfirst($sabor); ?>
-                                        </label>
+                                    <div class="col-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="sabor" value="<?php echo $sabor; ?>" id="yogurt_<?php echo $sabor; ?>">
+                                            <label class="form-check-label" for="yogurt_<?php echo $sabor; ?>">
+                                                <?php echo ucfirst($sabor); ?>
+                                            </label>
+                                        </div>
                                     </div>
-                                </div>
                                 <?php endforeach; ?>
                             </div>
                         </div>
@@ -47,18 +47,18 @@ include 'views/layout/header.php';
                         <div class="mb-3">
                             <label class="form-label fw-bold">Endulzante *</label>
                             <div class="row g-2">
-                                <?php 
+                                <?php
                                 $endulzantes = ['stevia', 'Azúcar', 'sin_endulzante'];
-                                foreach ($endulzantes as $endulzante): 
+                                foreach ($endulzantes as $endulzante):
                                 ?>
-                                <div class="col-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="endulzante" value="<?php echo $endulzante; ?>" id="yogurt_<?php echo $endulzante; ?>">
-                                        <label class="form-check-label" for="yogurt_<?php echo $endulzante; ?>">
-                                            <?php echo str_replace('_', ' ', ucfirst($endulzante)); ?>
-                                        </label>
+                                    <div class="col-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="endulzante" value="<?php echo $endulzante; ?>" id="yogurt_<?php echo $endulzante; ?>">
+                                            <label class="form-check-label" for="yogurt_<?php echo $endulzante; ?>">
+                                                <?php echo str_replace('_', ' ', ucfirst($endulzante)); ?>
+                                            </label>
+                                        </div>
                                     </div>
-                                </div>
                                 <?php endforeach; ?>
                             </div>
                         </div>
@@ -66,22 +66,25 @@ include 'views/layout/header.php';
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nivel de Dulzor *</label>
                             <div class="row g-2">
-                                <?php 
+                                <?php
                                 $niveles = ['bajo', 'medio', 'alto'];
-                                foreach ($niveles as $nivel): 
+                                foreach ($niveles as $nivel):
                                 ?>
-                                <div class="col-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="nivel_dulzor" value="<?php echo $nivel; ?>" id="yogurt_<?php echo $nivel; ?>">
-                                        <label class="form-check-label" for="yogurt_<?php echo $nivel; ?>">
-                                            <?php echo ucfirst($nivel); ?>
-                                        </label>
+                                    <div class="col-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="nivel_dulzor" value="<?php echo $nivel; ?>" id="yogurt_<?php echo $nivel; ?>">
+                                            <label class="form-check-label" for="yogurt_<?php echo $nivel; ?>">
+                                                <?php echo ucfirst($nivel); ?>
+                                            </label>
+                                        </div>
                                     </div>
-                                </div>
                                 <?php endforeach; ?>
                             </div>
                         </div>
-
+                        <br>
+                        <br>
+                        <br>
+                        <br>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Cantidad</label>
                             <div class="input-group" style="max-width: 150px;">
@@ -116,28 +119,28 @@ include 'views/layout/header.php';
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-4">
-                        <img src="../tortas2.jpg" 
-                             alt="Torta Personalizada" class="img-fluid rounded" style="height: 200px; object-fit: cover; box-shadow: 0 1px 8px rgba(0, 0, 0, 8);">
+                        <img src="../tortas2.jpg"
+                            alt="Torta Personalizada" class="img-fluid rounded" style="height: 200px; object-fit: cover; box-shadow: 0 1px 8px rgba(0, 0, 0, 8);">
                     </div>
-                    
+
                     <form id="tortaForm">
                         <input type="hidden" name="tipo_producto" value="torta">
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">Sabor *</label>
                             <div class="row g-2">
-                                <?php 
-                                $sabores_torta = ['chocolate', 'vainilla', 'fresa', 'zanahoria', 'red_velvet'];
-                                foreach ($sabores_torta as $sabor): 
+                                <?php
+                                $sabores_torta = ['Ahuyama', 'Amapola', 'Chocolate', 'Espinaca', 'Mango', 'Milkiway', 'Tomate', 'Vainilla', 'Yogurt', 'Zanahoria', 'Remolacha', 'Cebra', 'Frutos Secos'];
+                                foreach ($sabores_torta as $sabor):
                                 ?>
-                                <div class="col-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="sabor" value="<?php echo $sabor; ?>" id="torta_<?php echo $sabor; ?>">
-                                        <label class="form-check-label" for="torta_<?php echo $sabor; ?>">
-                                            <?php echo str_replace('_', ' ', ucfirst($sabor)); ?>
-                                        </label>
+                                    <div class="col-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="sabor" value="<?php echo $sabor; ?>" id="torta_<?php echo $sabor; ?>">
+                                            <label class="form-check-label" for="torta_<?php echo $sabor; ?>">
+                                                <?php echo str_replace('_', ' ', ucfirst($sabor)); ?>
+                                            </label>
+                                        </div>
                                     </div>
-                                </div>
                                 <?php endforeach; ?>
                             </div>
                         </div>
@@ -145,18 +148,18 @@ include 'views/layout/header.php';
                         <div class="mb-3">
                             <label class="form-label fw-bold">Endulzante *</label>
                             <div class="row g-2">
-                                <?php 
+                                <?php
                                 $endulzantes = ['stevia', 'Azúzar', 'azucar_organica'];
-                                foreach ($endulzantes as $endulzante): 
+                                foreach ($endulzantes as $endulzante):
                                 ?>
-                                <div class="col-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="endulzante" value="<?php echo $endulzante; ?>" id="torta_<?php echo $endulzante; ?>">
-                                        <label class="form-check-label" for="torta_<?php echo $endulzante; ?>">
-                                            <?php echo str_replace('_', ' ', ucfirst($endulzante)); ?>
-                                        </label>
+                                    <div class="col-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="endulzante" value="<?php echo $endulzante; ?>" id="torta_<?php echo $endulzante; ?>">
+                                            <label class="form-check-label" for="torta_<?php echo $endulzante; ?>">
+                                                <?php echo str_replace('_', ' ', ucfirst($endulzante)); ?>
+                                            </label>
+                                        </div>
                                     </div>
-                                </div>
                                 <?php endforeach; ?>
                             </div>
                         </div>
@@ -164,18 +167,18 @@ include 'views/layout/header.php';
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nivel de Dulzor *</label>
                             <div class="row g-2">
-                                <?php 
+                                <?php
                                 $niveles = ['bajo', 'medio', 'alto'];
-                                foreach ($niveles as $nivel): 
+                                foreach ($niveles as $nivel):
                                 ?>
-                                <div class="col-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="nivel_dulzor" value="<?php echo $nivel; ?>" id="torta_<?php echo $nivel; ?>">
-                                        <label class="form-check-label" for="torta_<?php echo $nivel; ?>">
-                                            <?php echo ucfirst($nivel); ?>
-                                        </label>
+                                    <div class="col-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="nivel_dulzor" value="<?php echo $nivel; ?>" id="torta_<?php echo $nivel; ?>">
+                                            <label class="form-check-label" for="torta_<?php echo $nivel; ?>">
+                                                <?php echo ucfirst($nivel); ?>
+                                            </label>
+                                        </div>
                                     </div>
-                                </div>
                                 <?php endforeach; ?>
                             </div>
                         </div>
@@ -183,7 +186,6 @@ include 'views/layout/header.php';
                         <div class="mb-3">
                             <label class="form-label fw-bold">Tamaño</label>
                             <select class="form-select" name="tamaño">
-                                <option value="pequeña">1/4 Lb - $25.000</option>
                                 <option value="mediana" selected>1/2 Libra - $35.000</option>
                                 <option value="grande">1 Libra - $50.000</option>
                             </select>
@@ -233,55 +235,55 @@ include 'views/layout/header.php';
 </div>
 
 <script>
-function changeQuantity(tipo, change) {
-    const quantityInput = document.getElementById(tipo + '_quantity');
-    let currentValue = parseInt(quantityInput.value);
-    let newValue = currentValue + change;
-    let maxValue = tipo === 'torta' ? 5 : 10;
-    
-    if (newValue >= 1 && newValue <= maxValue) {
-        quantityInput.value = newValue;
-    }
-}
+    function changeQuantity(tipo, change) {
+        const quantityInput = document.getElementById(tipo + '_quantity');
+        let currentValue = parseInt(quantityInput.value);
+        let newValue = currentValue + change;
+        let maxValue = tipo === 'torta' ? 5 : 10;
 
-// Actualizar precio de torta según tamaño
-document.querySelector('select[name="tamaño"]').addEventListener('change', function() {
-    const prices = {
-        'pequeña': '$25.000',
-        'mediana': '$35.000',
-        'grande': '$50.000'
-    };
-    document.getElementById('torta_price').textContent = prices[this.value];
-});
+        if (newValue >= 1 && newValue <= maxValue) {
+            quantityInput.value = newValue;
+        }
+    }
 
-function addPersonalizedProduct(tipo) {
-    const form = document.getElementById(tipo + 'Form');
-    const formData = new FormData(form);
-    
-    // Validar campos requeridos
-    if (!formData.get('sabor') || !formData.get('endulzante') || !formData.get('nivel_dulzor')) {
-        alert('Por favor completa todas las opciones requeridas');
-        return;
+    // Actualizar precio de torta según tamaño
+    document.querySelector('select[name="tamaño"]').addEventListener('change', function() {
+        const prices = {
+            'pequeña': '$25.000',
+            'mediana': '$35.000',
+            'grande': '$50.000'
+        };
+        document.getElementById('torta_price').textContent = prices[this.value];
+    });
+
+    function addPersonalizedProduct(tipo) {
+        const form = document.getElementById(tipo + 'Form');
+        const formData = new FormData(form);
+
+        // Validar campos requeridos
+        if (!formData.get('sabor') || !formData.get('endulzante') || !formData.get('nivel_dulzor')) {
+            alert('Por favor completa todas las opciones requeridas');
+            return;
+        }
+
+        const quantity = document.getElementById(tipo + '_quantity').value;
+
+        const personalizaciones = {
+            tipo_producto: tipo,
+            sabor: formData.get('sabor'),
+            endulzante: formData.get('endulzante'),
+            nivel_dulzor: formData.get('nivel_dulzor')
+        };
+
+        if (tipo === 'torta') {
+            personalizaciones.tamaño = formData.get('tamaño');
+        }
+
+        // Usar ID especial para productos personalizados (999 para yogurt, 998 para torta)
+        const productId = tipo === 'yogurt' ? 999 : 998;
+
+        addToCart(productId, quantity, personalizaciones);
     }
-    
-    const quantity = document.getElementById(tipo + '_quantity').value;
-    
-    const personalizaciones = {
-        tipo_producto: tipo,
-        sabor: formData.get('sabor'),
-        endulzante: formData.get('endulzante'),
-        nivel_dulzor: formData.get('nivel_dulzor')
-    };
-    
-    if (tipo === 'torta') {
-        personalizaciones.tamaño = formData.get('tamaño');
-    }
-    
-    // Usar ID especial para productos personalizados (999 para yogurt, 998 para torta)
-    const productId = tipo === 'yogurt' ? 999 : 998;
-    
-    addToCart(productId, quantity, personalizaciones);
-}
 </script>
 
 <?php include 'views/layout/footer.php'; ?>

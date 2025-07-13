@@ -44,7 +44,7 @@ include 'views/layout/header.php';
                     <div class="card product-card h-100">
                         <div class="position-relative">
                             <img src="<?php echo SITE_URL; ?>assets/images/products/<?php echo $product['imagen'] ?: 'default.jpg'; ?>" 
-                                 class="card-img-top" alt="<?php echo $product['nombre']; ?>" style="height: 250px; object-fit: cover;">
+                                 class="card-img-top" alt="<?php echo $product['nombre']; ?>" style="height: 320px; object-fit: cover;">
                             <?php if ($product['es_personalizable']): ?>
                                 <span class="badge bg-success position-absolute top-0 end-0 m-2">
                                     <i class="fas fa-palette me-1"></i>Personalizable

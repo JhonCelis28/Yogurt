@@ -16,7 +16,7 @@ include 'views/layout/header.php';
         <div class="col-lg-6 mb-4">
             <div class="card">
                 <img src="<?php echo SITE_URL; ?>assets/images/products/<?php echo $product['imagen'] ?: 'default.jpg'; ?>" 
-                     class="card-img-top" alt="<?php echo $product['nombre']; ?>" style="height: 400px; object-fit: cover;">
+                     class="card-img-top" alt="<?php echo $product['nombre']; ?>" style="height: 700px; object-fit: cover;">
             </div>
         </div>
 
@@ -58,6 +58,8 @@ include 'views/layout/header.php';
                                     <option value="mango">Mango</option>
                                     <option value="maracuya">Maracuyá</option>
                                     <option value="natural">Natural</option>
+                                    <option value="natural">Limón</option>
+
                                 </select>
                             </div>
                             <div class="col-md-4">

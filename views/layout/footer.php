@@ -15,7 +15,7 @@
                         <a href="https://www.facebook.com/YogurtArtesanalSanFrancisco/" class="text-light" target="_blank">
                             <i class="fab fa-facebook fa-2x"></i>
                         </a>
-                        <a href="<?php echo INSTAGRAM_URL; ?>" class="text-light" target="_blank">
+                        <a href="https://www.instagram.com/yogurtartesanalsanfrancisco?igsh=MXNnbXpmZGpmN2xkbg==" class="text-light" target="_blank">
                             <i class="fab fa-instagram fa-2x"></i>
                         </a>                    
                         <a href="https://wa.me/573112668752?" class="text-success" target="_blank">

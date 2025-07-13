@@ -18,7 +18,7 @@ include 'views/layout/header.php';
                         elaborados con amor y los mejores ingredientes naturales de la región.
                     </p>
                     <div class="d-flex gap-3 flex-wrap">
-                        <a href="<?php echo SITE_URL; ?>products" class="btn btn-primary btn-lg">
+                        <a href="../proyectoyogurt/products" class="btn btn-primary btn-lg">
                             <i class="fas fa-shopping-bag me-2"></i>Ver Productos
                         </a>
                         <a href="<?php echo SITE_URL; ?>products/personalized" class="btn btn-success btn-lg">
