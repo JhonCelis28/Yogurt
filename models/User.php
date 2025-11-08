@@ -11,9 +11,10 @@ class User {
     }
 
     public function register($data) {
+        $tipo = $data['tipo'] ?? 'cliente';
         $query = "INSERT INTO " . $this->table . " 
                   (nombre, email, telefono, password, direccion, tipo, fecha_registro) 
-                  VALUES (:nombre, :email, :telefono, :password, :direccion, 'cliente', NOW())";
+                  VALUES (:nombre, :email, :telefono, :password, :direccion, :tipo, NOW())";
 
         $stmt = $this->conn->prepare($query);
 
@@ -25,6 +26,7 @@ class User {
         $stmt->bindParam(':telefono', $data['telefono']);
         $stmt->bindParam(':password', $hashedPassword);
         $stmt->bindParam(':direccion', $data['direccion']);
+        $stmt->bindParam(':tipo', $tipo);
 
         return $stmt->execute();
     }
@@ -53,8 +55,11 @@ class User {
         return $stmt->rowCount() > 0;
     }
 
-    public function getUserById($id) {
-        $query = "SELECT * FROM " . $this->table . " WHERE id = :id AND activo = 1";
+    public function getUserById($id, $includeInactive = false) {
+        $query = "SELECT * FROM " . $this->table . " WHERE id = :id";
+        if (!$includeInactive) {
+            $query .= " AND activo = 1";
+        }
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id);
         $stmt->execute();
@@ -64,14 +69,33 @@ class User {
 
     public function updateUser($id, $data) {
         $query = "UPDATE " . $this->table . " 
-                  SET nombre = :nombre, telefono = :telefono, direccion = :direccion 
-                  WHERE id = :id";
+                  SET nombre = :nombre, telefono = :telefono, direccion = :direccion";
+        
+        // Si se proporciona email, actualizarlo
+        if (isset($data['email'])) {
+            $query .= ", email = :email";
+        }
+        
+        // Si se proporciona activo, actualizarlo
+        if (isset($data['activo'])) {
+            $query .= ", activo = :activo";
+        }
+        
+        $query .= " WHERE id = :id";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id);
         $stmt->bindParam(':nombre', $data['nombre']);
         $stmt->bindParam(':telefono', $data['telefono']);
         $stmt->bindParam(':direccion', $data['direccion']);
+        
+        if (isset($data['email'])) {
+            $stmt->bindParam(':email', $data['email']);
+        }
+        
+        if (isset($data['activo'])) {
+            $stmt->bindParam(':activo', $data['activo']);
+        }
 
         return $stmt->execute();
     }

@@ -27,6 +27,7 @@ $segments = explode('/', $path);
 $controller = $segments[0] ?? 'home';
 $action = $segments[1] ?? 'index';
 $param = $segments[2] ?? null;
+$param2 = $segments[3] ?? null; // Para rutas como admin/products/edit/123
 
 try {
     switch ($controller) {
@@ -163,6 +164,9 @@ try {
                 case 'process':
                     $checkoutController->process();
                     break;
+                case 'validate-promo':
+                    $checkoutController->validatePromo();
+                    break;
                 case 'success':
                     $checkoutController->success($param);
                     break;
@@ -183,22 +187,70 @@ try {
                     $adminController->index();
                     break;
                 case 'products':
-                    $adminController->products();
+                    if (isset($segments[2]) && $segments[2] === 'add') {
+                        $adminController->addProduct();
+                    } elseif (isset($segments[2]) && $segments[2] === 'edit' && isset($param2)) {
+                        $adminController->editProduct($param2);
+                    } elseif (isset($segments[2]) && $segments[2] === 'delete' && isset($param2)) {
+                        $adminController->deleteProduct($param2);
+                    } else {
+                        $adminController->products();
+                    }
                     break;
                 case 'categories':
-                    $adminController->categories();
+                    if (isset($segments[2]) && $segments[2] === 'add') {
+                        $adminController->addCategory();
+                    } elseif (isset($segments[2]) && $segments[2] === 'edit' && isset($param2)) {
+                        $adminController->editCategory($param2);
+                    } elseif (isset($segments[2]) && $segments[2] === 'delete' && isset($param2)) {
+                        $adminController->deleteCategory($param2);
+                    } else {
+                        $adminController->categories();
+                    }
                     break;
                 case 'users':
-                    $adminController->users();
+                    if (isset($segments[2]) && $segments[2] === 'add') {
+                        $adminController->addUser();
+                    } elseif (isset($segments[2]) && $segments[2] === 'edit' && isset($param2)) {
+                        $adminController->editUser($param2);
+                    } elseif (isset($segments[2]) && $segments[2] === 'toggle-status' && isset($param2)) {
+                        $adminController->toggleUserStatus($param2);
+                    } else {
+                        $adminController->users();
+                    }
                     break;
                 case 'orders':
-                    $adminController->orders();
+                    if (isset($segments[2]) && $segments[2] === 'update-status' && isset($param2)) {
+                        $adminController->updateOrderStatus($param2);
+                    } elseif (isset($segments[2]) && $segments[2] === 'view' && isset($param2)) {
+                        $adminController->viewOrderDetails($param2);
+                    } elseif (isset($segments[2]) && $segments[2] === 'print' && isset($param2)) {
+                        $adminController->printOrder($param2);
+                    } else {
+                        $adminController->orders();
+                    }
                     break;
                 case 'promotions':
-                    $adminController->promotions();
+                    if (isset($segments[2]) && $segments[2] === 'add') {
+                        $adminController->addPromotion();
+                    } elseif (isset($segments[2]) && $segments[2] === 'edit' && isset($param2)) {
+                        $adminController->editPromotion($param2);
+                    } elseif (isset($segments[2]) && $segments[2] === 'toggle' && isset($param2)) {
+                        $adminController->togglePromotionStatus($param2);
+                    } elseif (isset($segments[2]) && $segments[2] === 'delete' && isset($param2)) {
+                        $adminController->deletePromotion($param2);
+                    } else {
+                        $adminController->promotions();
+                    }
                     break;
                 case 'contacts':
-                    $adminController->contacts();
+                    if (isset($segments[2]) && $segments[2] === 'mark-read' && isset($param)) {
+                        $adminController->markContactAsRead($param);
+                    } elseif (isset($segments[2]) && $segments[2] === 'delete' && isset($param)) {
+                        $adminController->deleteContact($param);
+                    } else {
+                        $adminController->contacts();
+                    }
                     break;
                 default:
                     $adminController->index();

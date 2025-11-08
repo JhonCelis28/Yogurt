@@ -12,6 +12,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
@@ -283,6 +285,55 @@
             .navbar-brand {
                 font-size: 1.2rem;
             }
+        }
+
+        /* SweetAlert2 Custom Styles */
+        .swal2-popup-custom {
+            border-radius: 20px !important;
+            font-family: 'Poppins', sans-serif !important;
+            padding: 2rem !important;
+        }
+
+        .swal2-confirm-custom {
+            background: linear-gradient(45deg, #E91E63, #C2185B) !important;
+            border: none !important;
+            border-radius: 25px !important;
+            padding: 12px 30px !important;
+            font-weight: 500 !important;
+            font-size: 16px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3) !important;
+        }
+
+        .swal2-confirm-custom:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(233, 30, 99, 0.4) !important;
+        }
+
+        .swal2-cancel-custom {
+            background: #6c757d !important;
+            border: none !important;
+            border-radius: 25px !important;
+            padding: 12px 30px !important;
+            font-weight: 500 !important;
+            font-size: 16px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .swal2-cancel-custom:hover {
+            background: #5a6268 !important;
+            transform: translateY(-2px) !important;
+        }
+
+        .swal2-title {
+            font-size: 28px !important;
+            font-weight: 600 !important;
+            color: #333 !important;
+        }
+
+        .swal2-icon.swal2-warning {
+            border-color: #ff6b6b !important;
+            color: #ff6b6b !important;
         }
     </style>
 </head>

@@ -50,10 +50,19 @@ include 'views/layout/header.php';
 
             <!-- Estadísticas de contactos -->
             <div class="row g-3 mb-4">
+                <?php
+                $totalContacts = count($contacts);
+                $unreadContacts = count(array_filter($contacts, function($c) { return !$c['leido']; }));
+                $readContacts = $totalContacts - $unreadContacts;
+                $thisWeek = date('Y-m-d', strtotime('-7 days'));
+                $thisWeekContacts = count(array_filter($contacts, function($c) use ($thisWeek) { 
+                    return $c['fecha_contacto'] >= $thisWeek; 
+                }));
+                ?>
                 <div class="col-md-3">
                     <div class="card bg-primary text-white">
                         <div class="card-body text-center">
-                            <h3>45</h3>
+                            <h3><?php echo $totalContacts; ?></h3>
                             <p class="mb-0">Total Mensajes</p>
                         </div>
                     </div>
@@ -61,7 +70,7 @@ include 'views/layout/header.php';
                 <div class="col-md-3">
                     <div class="card bg-warning text-white">
                         <div class="card-body text-center">
-                            <h3>12</h3>
+                            <h3><?php echo $unreadContacts; ?></h3>
                             <p class="mb-0">No Leídos</p>
                         </div>
                     </div>
@@ -69,15 +78,15 @@ include 'views/layout/header.php';
                 <div class="col-md-3">
                     <div class="card bg-success text-white">
                         <div class="card-body text-center">
-                            <h3>33</h3>
-                            <p class="mb-0">Respondidos</p>
+                            <h3><?php echo $readContacts; ?></h3>
+                            <p class="mb-0">Leídos</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card bg-info text-white">
                         <div class="card-body text-center">
-                            <h3>8</h3>
+                            <h3><?php echo $thisWeekContacts; ?></h3>
                             <p class="mb-0">Esta Semana</p>
                         </div>
                     </div>
@@ -101,50 +110,45 @@ include 'views/layout/header.php';
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php
-                                // Datos de ejemplo para contactos
-                                $sampleContacts = [
-                                    ['id' => 1, 'nombre' => 'María García', 'email' => 'maria@email.com', 'telefono' => '3001234567', 'mensaje' => 'Hola, me interesa conocer más sobre sus productos de yogur griego...', 'fecha_contacto' => '2024-06-10 14:30:00', 'leido' => 0],
-                                    ['id' => 2, 'nombre' => 'Carlos López', 'email' => 'carlos@email.com', 'telefono' => '3007654321', 'mensaje' => '¿Hacen entregas a domicilio en Medellín?', 'fecha_contacto' => '2024-06-10 12:15:00', 'leido' => 1],
-                                    ['id' => 3, 'nombre' => 'Ana Rodríguez', 'email' => 'ana@email.com', 'telefono' => '3009876543', 'mensaje' => 'Me gustaría saber los precios de las tortas personalizadas...', 'fecha_contacto' => '2024-06-09 16:45:00', 'leido' => 0],
-                                    ['id' => 4, 'nombre' => 'Luis Martínez', 'email' => 'luis@email.com', 'telefono' => '3005432109', 'mensaje' => '¿Tienen productos sin lactosa?', 'fecha_contacto' => '2024-06-09 10:20:00', 'leido' => 1],
-                                    ['id' => 5, 'nombre' => 'Sofia Hernández', 'email' => 'sofia@email.com', 'telefono' => '3002468135', 'mensaje' => 'Excelente servicio, muy recomendado!', 'fecha_contacto' => '2024-06-08 18:30:00', 'leido' => 1]
-                                ];
-                                
-                                foreach ($sampleContacts as $contact):
-                                ?>
-                                <tr class="<?php echo !$contact['leido'] ? 'table-warning' : ''; ?>">
-                                    <td>
-                                        <i class="fas fa-circle <?php echo !$contact['leido'] ? 'text-warning' : 'text-success'; ?>" 
-                                           title="<?php echo !$contact['leido'] ? 'No leído' : 'Leído'; ?>"></i>
-                                    </td>
-                                    <td><?php echo $contact['nombre']; ?></td>
-                                    <td><?php echo $contact['email']; ?></td>
-                                    <td><?php echo $contact['telefono']; ?></td>
-                                    <td><?php echo formatDateTime($contact['fecha_contacto']); ?></td>
-                                    <td>
-                                        <div style="max-width: 200px;">
-                                            <?php echo substr($contact['mensaje'], 0, 50) . '...'; ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-primary" onclick="viewContact(<?php echo $contact['id']; ?>)">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-success" onclick="replyContact('<?php echo $contact['email']; ?>')">
-                                            <i class="fas fa-reply"></i>
-                                        </button>
-                                        <?php if (!$contact['leido']): ?>
-                                        <button class="btn btn-sm btn-outline-warning" onclick="markAsRead(<?php echo $contact['id']; ?>)">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                        <?php endif; ?>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteContact(<?php echo $contact['id']; ?>)">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
+                                <?php if (!empty($contacts)): ?>
+                                    <?php foreach ($contacts as $contact): ?>
+                                    <tr class="<?php echo !$contact['leido'] ? 'table-warning' : ''; ?>">
+                                        <td>
+                                            <i class="fas fa-circle <?php echo !$contact['leido'] ? 'text-warning' : 'text-success'; ?>" 
+                                               title="<?php echo !$contact['leido'] ? 'No leído' : 'Leído'; ?>"></i>
+                                        </td>
+                                        <td><?php echo $contact['nombre']; ?></td>
+                                        <td><?php echo $contact['email']; ?></td>
+                                        <td><?php echo $contact['telefono'] ?? 'N/A'; ?></td>
+                                        <td><?php echo formatDateTime($contact['fecha_contacto']); ?></td>
+                                        <td>
+                                            <div style="max-width: 200px;">
+                                                <?php echo substr($contact['mensaje'], 0, 50) . '...'; ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="viewContact(<?php echo $contact['id']; ?>)">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success" onclick="replyContact('<?php echo $contact['email']; ?>')">
+                                                <i class="fas fa-reply"></i>
+                                            </button>
+                                            <?php if (!$contact['leido']): ?>
+                                            <button class="btn btn-sm btn-outline-warning" onclick="markAsRead(<?php echo $contact['id']; ?>)">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <?php endif; ?>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteContact(<?php echo $contact['id']; ?>)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="7" class="text-center">No hay contactos registrados</td>
+                                    </tr>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -209,22 +213,19 @@ function replyFromModal() {
 
 function markAsRead(id) {
     if (confirm('¿Marcar este mensaje como leído?')) {
-        alert('Mensaje marcado como leído');
-        location.reload();
+        window.location.href = '<?php echo SITE_URL; ?>admin/contacts/mark-read/' + id;
     }
 }
 
 function markAllAsRead() {
     if (confirm('¿Marcar todos los mensajes como leídos?')) {
-        alert('Todos los mensajes marcados como leídos');
-        location.reload();
+        alert('Función en desarrollo');
     }
 }
 
 function deleteContact(id) {
     if (confirm('¿Estás seguro de eliminar este contacto?')) {
-        alert('Contacto eliminado');
-        location.reload();
+        window.location.href = '<?php echo SITE_URL; ?>admin/contacts/delete/' + id;
     }
 }
 </script>

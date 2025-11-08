@@ -53,7 +53,6 @@ include 'views/layout/header.php';
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
                                     <th>Nombre</th>
                                     <th>Descripción</th>
                                     <th>Productos</th>
@@ -66,12 +65,11 @@ include 'views/layout/header.php';
                                 <?php if (!empty($categories)): ?>
                                     <?php foreach ($categories as $category): ?>
                                     <tr>
-                                        <td><?php echo $category['id']; ?></td>
                                         <td><?php echo $category['nombre']; ?></td>
                                         <td><?php echo substr($category['descripcion'], 0, 50) . '...'; ?></td>
                                         <td>
                                             <span class="badge bg-info">
-                                                <?php echo rand(5, 25); ?> productos
+                                                <?php echo isset($category['product_count']) ? $category['product_count'] : 0; ?> productos
                                             </span>
                                         </td>
                                         <td>
@@ -84,7 +82,7 @@ include 'views/layout/header.php';
                                             <button class="btn btn-sm btn-outline-primary" onclick="editCategory(<?php echo $category['id']; ?>)">
                                                 <i class="fas fa-edit"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(<?php echo $category['id']; ?>)">
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(<?php echo $category['id']; ?>, '<?php echo htmlspecialchars($category['nombre'], ENT_QUOTES); ?>', <?php echo isset($category['product_count']) ? $category['product_count'] : 0; ?>)">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </td>
@@ -92,7 +90,7 @@ include 'views/layout/header.php';
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="7" class="text-center">No hay categorías registradas</td>
+                                        <td colspan="6" class="text-center">No hay categorías registradas</td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>
@@ -132,15 +130,140 @@ include 'views/layout/header.php';
     </div>
 </div>
 
+<!-- Modal Editar Categoría -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Categoría</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="" id="editCategoryForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_nombre" class="form-label">Nombre de la Categoría *</label>
+                        <input type="text" class="form-control" id="edit_nombre" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="edit_descripcion" name="descripcion" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Actualizar Categoría</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 function editCategory(id) {
-    alert('Función de editar categoría ID: ' + id);
+    // Limpiar el formulario
+    document.getElementById('editCategoryForm').reset();
+    
+    // Cargar datos de la categoría
+    fetch('<?php echo SITE_URL; ?>admin/categories/edit/' + id + '?ajax=1')
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+                return;
+            }
+            
+            // Llenar el formulario con los datos de la categoría
+            document.getElementById('edit_nombre').value = data.nombre || '';
+            document.getElementById('edit_descripcion').value = data.descripcion || '';
+            
+            // Actualizar la acción del formulario
+            document.getElementById('editCategoryForm').action = '<?php echo SITE_URL; ?>admin/categories/edit/' + id;
+            
+            // Mostrar el modal
+            const editModal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
+            editModal.show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar los datos de la categoría');
+        });
 }
 
-function deleteCategory(id) {
-    if (confirm('¿Estás seguro de eliminar esta categoría?')) {
-        alert('Eliminar categoría ID: ' + id);
+function deleteCategory(id, categoryName, productCount) {
+    let message = '';
+    if (productCount > 0) {
+        message = `<div style="text-align: center;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 60px; color: #ff6b6b; margin-bottom: 20px;"></i>
+                    <p style="font-size: 18px; margin-bottom: 10px;">No se puede eliminar la categoría:</p>
+                    <p style="font-size: 20px; font-weight: bold; color: var(--primary-color); margin-bottom: 20px;">${categoryName}</p>
+                    <p style="font-size: 16px; color: #ff6b6b; margin-bottom: 10px;">
+                        <i class="fas fa-box me-2"></i>Tiene <strong>${productCount}</strong> producto(s) asociado(s)
+                    </p>
+                    <p style="font-size: 14px; color: #666;">Primero debes eliminar o mover los productos de esta categoría</p>
+                   </div>`;
+        
+        Swal.fire({
+            title: 'No se puede eliminar',
+            html: message,
+            icon: 'error',
+            confirmButtonColor: '#E91E63',
+            confirmButtonText: '<i class="fas fa-check me-2"></i>Entendido',
+            customClass: {
+                popup: 'swal2-popup-custom',
+                confirmButton: 'swal2-confirm-custom'
+            },
+            buttonsStyling: false
+        });
+        return;
     }
+    
+    message = `<div style="text-align: center;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 60px; color: #ff6b6b; margin-bottom: 20px;"></i>
+                <p style="font-size: 18px; margin-bottom: 10px;">Estás a punto de eliminar:</p>
+                <p style="font-size: 20px; font-weight: bold; color: var(--primary-color); margin-bottom: 20px;">${categoryName}</p>
+                <p style="font-size: 14px; color: #666;">Esta acción no se puede deshacer</p>
+               </div>`;
+    
+    Swal.fire({
+        title: '¿Estás seguro?',
+        html: message,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#E91E63',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="fas fa-trash me-2"></i>Sí, eliminar',
+        cancelButtonText: '<i class="fas fa-times me-2"></i>Cancelar',
+        reverseButtons: true,
+        customClass: {
+            popup: 'swal2-popup-custom',
+            confirmButton: 'swal2-confirm-custom',
+            cancelButton: 'swal2-cancel-custom'
+        },
+        buttonsStyling: false,
+        showClass: {
+            popup: 'animate__animated animate__fadeInDown'
+        },
+        hideClass: {
+            popup: 'animate__animated animate__fadeOutUp'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Eliminando...',
+                html: '<div style="text-align: center;"><i class="fas fa-spinner fa-spin" style="font-size: 40px; color: #E91E63;"></i><p style="margin-top: 20px;">Por favor espera</p></div>',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Redirigir para eliminar
+            window.location.href = '<?php echo SITE_URL; ?>admin/categories/delete/' + id;
+        }
+    });
 }
 </script>
 

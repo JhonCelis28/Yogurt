@@ -1,11 +1,13 @@
 <?php
 require_once 'models/Cart.php';
 require_once 'models/Product.php';
+require_once 'models/Order.php';
 require_once 'config/config.php';
 
 class CartController {
     private $cartModel;
     private $productModel;
+    private $orderModel;
 
     public function __construct() {
         if (!isLoggedIn()) {
@@ -14,11 +16,16 @@ class CartController {
         
         $this->cartModel = new Cart();
         $this->productModel = new Product();
+        $this->orderModel = new Order();
     }
 
     public function index() {
         $cartItems = $this->cartModel->getCartItems($_SESSION['user_id']);
         $total = $this->cartModel->getCartTotal($_SESSION['user_id']);
+        
+        // Verificar si es primera compra para mostrar/ocultar promoción
+        $isFirstOrder = $this->orderModel->isFirstOrder($_SESSION['user_id']);
+        
         include 'views/cart/index.php';
     }
 

@@ -10,12 +10,16 @@ class Product {
         $this->conn = $database->getConnection();
     }
 
-    public function getAllProducts() {
+    public function getAllProducts($includeInactive = false) {
         $query = "SELECT p.*, c.nombre as categoria_nombre 
                   FROM " . $this->table . " p 
-                  LEFT JOIN categorias c ON p.categoria_id = c.id 
-                  WHERE p.activo = 1 
-                  ORDER BY p.fecha_creacion DESC";
+                  LEFT JOIN categorias c ON p.categoria_id = c.id";
+        
+        if (!$includeInactive) {
+            $query .= " WHERE p.activo = 1";
+        }
+        
+        $query .= " ORDER BY p.fecha_creacion DESC";
         
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -23,11 +27,15 @@ class Product {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getProductById($id) {
+    public function getProductById($id, $includeInactive = false) {
         $query = "SELECT p.*, c.nombre as categoria_nombre 
                   FROM " . $this->table . " p 
                   LEFT JOIN categorias c ON p.categoria_id = c.id 
-                  WHERE p.id = :id AND p.activo = 1";
+                  WHERE p.id = :id";
+        
+        if (!$includeInactive) {
+            $query .= " AND p.activo = 1";
+        }
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id);
@@ -79,8 +87,8 @@ class Product {
     }
     public function createProduct($data) {
         $query = "INSERT INTO " . $this->table . " 
-                  (nombre, descripcion, precio, categoria_id, stock, es_personalizable, imagen, fecha_creacion) 
-                  VALUES (:nombre, :descripcion, :precio, :categoria_id, :stock, :es_personalizable, :imagen, NOW())";
+                  (nombre, descripcion, precio, categoria_id, stock, es_personalizable, destacado, imagen, fecha_creacion) 
+                  VALUES (:nombre, :descripcion, :precio, :categoria_id, :stock, :es_personalizable, :destacado, :imagen, NOW())";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':nombre', $data['nombre']);
@@ -89,6 +97,7 @@ class Product {
         $stmt->bindParam(':categoria_id', $data['categoria_id']);
         $stmt->bindParam(':stock', $data['stock']);
         $stmt->bindParam(':es_personalizable', $data['es_personalizable']);
+        $stmt->bindParam(':destacado', $data['destacado']);
         $stmt->bindParam(':imagen', $data['imagen']);
 
         return $stmt->execute();
@@ -97,7 +106,8 @@ class Product {
     public function updateProduct($id, $data) {
         $query = "UPDATE " . $this->table . " 
                   SET nombre = :nombre, descripcion = :descripcion, precio = :precio, 
-                      categoria_id = :categoria_id, stock = :stock, es_personalizable = :es_personalizable";
+                      categoria_id = :categoria_id, stock = :stock, es_personalizable = :es_personalizable, 
+                      destacado = :destacado, activo = :activo";
         
         if (!empty($data['imagen'])) {
             $query .= ", imagen = :imagen";
@@ -113,6 +123,8 @@ class Product {
         $stmt->bindParam(':categoria_id', $data['categoria_id']);
         $stmt->bindParam(':stock', $data['stock']);
         $stmt->bindParam(':es_personalizable', $data['es_personalizable']);
+        $stmt->bindParam(':destacado', $data['destacado']);
+        $stmt->bindParam(':activo', $data['activo']);
         
         if (!empty($data['imagen'])) {
             $stmt->bindParam(':imagen', $data['imagen']);
@@ -122,7 +134,8 @@ class Product {
     }
 
     public function deleteProduct($id) {
-        $query = "UPDATE " . $this->table . " SET activo = 0 WHERE id = :id";
+        // Eliminar realmente el producto de la base de datos
+        $query = "DELETE FROM " . $this->table . " WHERE id = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id);
 

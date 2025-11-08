@@ -8,6 +8,13 @@ include 'views/layout/header.php';
         <h1 class="display-4 text-primary-custom">Promociones Especiales</h1>
         <p class="lead">¡Aprovecha nuestras ofertas exclusivas!</p>
     </div>
+    
+    <!-- Aviso sobre uso de promociones -->
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Importante:</strong> Solo puedes aplicar una promoción por compra. Las promociones automáticas se aplicarán según corresponda, o puedes usar un código promocional en el checkout. 
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 
     <div class="row g-4">
         <!-- Promoción Primera Compra -->

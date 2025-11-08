@@ -125,6 +125,7 @@ include 'views/layout/header.php';
                     <h6 class="mb-0"><i class="fas fa-gift me-2"></i>Promociones Disponibles</h6>
                 </div>
                 <div class="card-body">
+                    <?php if (isset($isFirstOrder) && $isFirstOrder): ?>
                     <div class="mb-3">
                         <div class="d-flex align-items-center mb-2">
                             <i class="fas fa-star text-warning me-2"></i>
@@ -132,6 +133,7 @@ include 'views/layout/header.php';
                         </div>
                         <small class="text-muted">15% de descuento en tu primera compra</small>
                     </div>
+                    <?php endif; ?>
                     
                     <div class="mb-3">
                         <div class="d-flex align-items-center mb-2">

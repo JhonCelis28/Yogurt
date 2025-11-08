@@ -54,7 +54,7 @@ include 'views/layout/header.php';
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="card-title">Productos</h6>
-                                    <h3 class="mb-0">45</h3>
+                                    <h3 class="mb-0"><?php echo $stats['productos']; ?></h3>
                                 </div>
                                 <div class="align-self-center">
                                     <i class="fas fa-box fa-2x opacity-75"></i>
@@ -70,7 +70,7 @@ include 'views/layout/header.php';
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="card-title">Pedidos Hoy</h6>
-                                    <h3 class="mb-0">12</h3>
+                                    <h3 class="mb-0"><?php echo $stats['pedidos_hoy']; ?></h3>
                                 </div>
                                 <div class="align-self-center">
                                     <i class="fas fa-shopping-cart fa-2x opacity-75"></i>
@@ -86,7 +86,7 @@ include 'views/layout/header.php';
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="card-title">Usuarios</h6>
-                                    <h3 class="mb-0">156</h3>
+                                    <h3 class="mb-0"><?php echo $stats['usuarios']; ?></h3>
                                 </div>
                                 <div class="align-self-center">
                                     <i class="fas fa-users fa-2x opacity-75"></i>
@@ -102,7 +102,7 @@ include 'views/layout/header.php';
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="card-title">Ventas Mes</h6>
-                                    <h3 class="mb-0">$2.5M</h3>
+                                    <h3 class="mb-0"><?php echo formatPrice($stats['ventas_mes']); ?></h3>
                                 </div>
                                 <div class="align-self-center">
                                     <i class="fas fa-chart-line fa-2x opacity-75"></i>
@@ -134,36 +134,38 @@ include 'views/layout/header.php';
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>#001</td>
-                                            <td>María García</td>
-                                            <td>$45.000</td>
-                                            <td><span class="badge bg-warning">Pendiente</span></td>
-                                            <td>10/06/2024</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary">Ver</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>#002</td>
-                                            <td>Carlos López</td>
-                                            <td>$32.000</td>
-                                            <td><span class="badge bg-success">Confirmado</span></td>
-                                            <td>10/06/2024</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary">Ver</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>#003</td>
-                                            <td>Ana Rodríguez</td>
-                                            <td>$28.500</td>
-                                            <td><span class="badge bg-info">Preparando</span></td>
-                                            <td>09/06/2024</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary">Ver</button>
-                                            </td>
-                                        </tr>
+                                        <?php if (!empty($recentOrders)): ?>
+                                            <?php foreach ($recentOrders as $order): ?>
+                                            <tr>
+                                                <td>#<?php echo str_pad($order['id'], 3, '0', STR_PAD_LEFT); ?></td>
+                                                <td><?php echo $order['cliente_nombre'] ?? 'N/A'; ?></td>
+                                                <td><?php echo formatPrice($order['total']); ?></td>
+                                                <td>
+                                                    <?php
+                                                    $statusClass = '';
+                                                    switch($order['estado']) {
+                                                        case 'pendiente': $statusClass = 'bg-warning'; break;
+                                                        case 'confirmado': $statusClass = 'bg-info'; break;
+                                                        case 'preparando': $statusClass = 'bg-primary'; break;
+                                                        case 'enviado': $statusClass = 'bg-success'; break;
+                                                        case 'entregado': $statusClass = 'bg-success'; break;
+                                                        case 'cancelado': $statusClass = 'bg-danger'; break;
+                                                        default: $statusClass = 'bg-secondary';
+                                                    }
+                                                    ?>
+                                                    <span class="badge <?php echo $statusClass; ?>"><?php echo ucfirst($order['estado']); ?></span>
+                                                </td>
+                                                <td><?php echo formatDateTime($order['fecha_pedido']); ?></td>
+                                                <td>
+                                                    <a href="<?php echo SITE_URL; ?>admin/orders" class="btn btn-sm btn-outline-primary">Ver</a>
+                                                </td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr>
+                                                <td colspan="6" class="text-center">No hay pedidos recientes</td>
+                                            </tr>
+                                        <?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>

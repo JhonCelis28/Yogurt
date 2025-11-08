@@ -121,6 +121,27 @@ include 'views/layout/header.php';
                         <span>Subtotal:</span>
                         <span><?php echo formatPrice($subtotal); ?></span>
                     </div>
+                    <?php 
+                    // Mostrar descuentos por separado si ambos aplican
+                    if (isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0): 
+                    ?>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-success">
+                            <i class="fas fa-gift me-1"></i>Descuento (<?php echo $firstOrderPromotion['nombre']; ?>):
+                        </span>
+                        <span class="text-success">-<?php echo formatPrice($firstDiscount); ?></span>
+                    </div>
+                    <?php endif; ?>
+                    <?php 
+                    if (isset($automaticPromotion) && $automaticPromotion && isset($autoDiscount) && $autoDiscount > 0): 
+                    ?>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-success">
+                            <i class="fas fa-gift me-1"></i>Descuento (<?php echo $automaticPromotion['nombre']; ?>):
+                        </span>
+                        <span class="text-success">-<?php echo formatPrice($autoDiscount); ?></span>
+                    </div>
+                    <?php endif; ?>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Envío:</span>
                         <span class="text-success">Gratis</span>
@@ -128,11 +149,49 @@ include 'views/layout/header.php';
                     <hr>
                     <div class="d-flex justify-content-between mb-3">
                         <strong>Total:</strong>
-                        <strong class="text-primary-custom"><?php echo formatPrice($subtotal); ?></strong>
+                        <strong class="text-primary-custom"><?php echo formatPrice(isset($total) ? $total : $subtotal); ?></strong>
                     </div>
+                    <?php 
+                    $hasAnyDiscount = (isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0) || 
+                                     (isset($automaticPromotion) && $automaticPromotion && isset($autoDiscount) && $autoDiscount > 0);
+                    if ($hasAnyDiscount): 
+                    ?>
+                    <div class="alert alert-success mb-0">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <small>
+                            <?php if (isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0): ?>
+                                ¡Descuento de primera compra aplicado automáticamente!
+                            <?php endif; ?>
+                            <?php if (isset($automaticPromotion) && $automaticPromotion && isset($autoDiscount) && $autoDiscount > 0): ?>
+                                <?php if (isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0): ?>
+                                    <br>
+                                <?php endif; ?>
+                                ¡Descuento por monto aplicado automáticamente!
+                            <?php endif; ?>
+                        </small>
+                    </div>
+                    <?php elseif (isset($isFirstOrder) && $isFirstOrder): ?>
+                    <div class="alert alert-warning mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <small>
+                            Es tu primera compra. 
+                            <?php if (!$firstOrderPromotion): ?>
+                                No se encontró promoción de primera compra activa. 
+                                <br><strong>Verifica en Admin/Promociones que exista una promoción con código: PRIMERA_COMPRA, PRIMERA o PRIMERA15 y que esté ACTIVA.</strong>
+                            <?php else: ?>
+                                Promoción encontrada pero descuento = 0. Verifica el valor del descuento.
+                            <?php endif; ?>
+                        </small>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
+            <?php 
+            $hasAnyDiscount = (isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0) || 
+                             (isset($automaticPromotion) && $automaticPromotion && isset($autoDiscount) && $autoDiscount > 0);
+            if (!$hasAnyDiscount): 
+            ?>
             <div class="card mb-4">
                 <div class="card-header bg-warning text-dark">
                     <h5 class="mb-0"><i class="fas fa-gift me-2"></i>Código Promocional</h5>
@@ -145,6 +204,27 @@ include 'views/layout/header.php';
                     <div id="promo_message"></div>
                 </div>
             </div>
+            <?php else: ?>
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-gift me-2"></i>Promoción<?php echo ((isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0) && (isset($automaticPromotion) && $automaticPromotion && isset($autoDiscount) && $autoDiscount > 0)) ? 'es' : ''; ?> Aplicada<?php echo ((isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0) && (isset($automaticPromotion) && $automaticPromotion && isset($autoDiscount) && $autoDiscount > 0)) ? 's' : ''; ?></h5>
+                </div>
+                <div class="card-body">
+                    <?php if (isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0): ?>
+                    <div class="alert alert-success mb-2">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong><?php echo htmlspecialchars($firstOrderPromotion['nombre']); ?></strong> aplicada automáticamente
+                    </div>
+                    <?php endif; ?>
+                    <?php if (isset($automaticPromotion) && $automaticPromotion && isset($autoDiscount) && $autoDiscount > 0): ?>
+                    <div class="alert alert-success mb-0">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong><?php echo htmlspecialchars($automaticPromotion['nombre']); ?></strong> aplicada automáticamente
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <div class="card">
                 <div class="card-body">
@@ -162,24 +242,45 @@ include 'views/layout/header.php';
 </div>
 
 <script>
-document.getElementById('apply_promo').addEventListener('click', function() {
-    const promoCode = document.getElementById('promo_code').value;
-    const promoMessage = document.getElementById('promo_message');
-    
-    if (promoCode.trim() === '') {
-        promoMessage.innerHTML = '<div class="alert alert-warning">Por favor ingresa un código promocional</div>';
-        return;
-    }
-    
-    // Simulación de aplicación de código promocional
-    if (promoCode.toLowerCase() === 'primera15') {
-        promoMessage.innerHTML = '<div class="alert alert-success">¡Código aplicado! 15% de descuento</div>';
-    } else if (promoCode.toLowerCase() === 'familia20') {
-        promoMessage.innerHTML = '<div class="alert alert-success">¡Código aplicado! 20% de descuento</div>';
-    } else {
-        promoMessage.innerHTML = '<div class="alert alert-danger">Código promocional inválido</div>';
-    }
-});
+<?php if (!isset($firstOrderPromotion) || !$firstOrderPromotion || $discount == 0): ?>
+const applyPromoBtn = document.getElementById('apply_promo');
+if (applyPromoBtn) {
+    applyPromoBtn.addEventListener('click', function() {
+        const promoCode = document.getElementById('promo_code').value;
+        const promoMessage = document.getElementById('promo_message');
+        
+        if (promoCode.trim() === '') {
+            promoMessage.innerHTML = '<div class="alert alert-warning">Por favor ingresa un código promocional</div>';
+            return;
+        }
+        
+        // Validar código promocional con el servidor
+        fetch('<?php echo SITE_URL; ?>checkout/validate-promo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'codigo=' + encodeURIComponent(promoCode)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                promoMessage.innerHTML = '<div class="alert alert-success">¡Código aplicado! ' + data.message + '</div>';
+                // Recargar la página para aplicar el descuento
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                promoMessage.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            promoMessage.innerHTML = '<div class="alert alert-danger">Error al validar el código promocional</div>';
+        });
+    });
+}
+<?php endif; ?>
 </script>
 
 <?php include 'views/layout/footer.php'; ?>

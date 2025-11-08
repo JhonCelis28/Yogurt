@@ -84,6 +84,18 @@ class Order {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function isFirstOrder($userId) {
+        $query = "SELECT COUNT(*) as count FROM " . $this->table . " 
+                  WHERE usuario_id = :usuario_id";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':usuario_id', $userId);
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['count'] == 0;
+    }
+
     public function getAllOrders($limit = 50) {
         $query = "SELECT p.*, u.nombre as cliente_nombre, u.email as cliente_email 
                   FROM " . $this->table . " p 
