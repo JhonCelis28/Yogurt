@@ -29,55 +29,75 @@ class CheckoutController {
         $subtotal = $this->cartModel->getCartTotal($_SESSION['user_id']);
         $promotions = $this->promotionModel->getActivePromotions();
         
-        // Verificar si es primera compra y obtener promoción automática
-        $isFirstOrder = $this->orderModel->isFirstOrder($_SESSION['user_id']);
+        // Verificar si hay un código promocional aplicado manualmente
+        $manualPromotion = null;
+        $manualDiscount = 0;
         $firstOrderPromotion = null;
         $automaticPromotion = null;
+        $firstDiscount = 0;
+        $autoDiscount = 0;
         $discount = 0;
         $total = $subtotal;
         
-        // Prioridad 1: Si es primera compra, aplicar SOLO el descuento de primera compra (no otras promociones)
-        // Prioridad 2: Si NO es primera compra, aplicar SOLO UNA promoción automática (la mejor)
-        
-        $firstDiscount = 0;
-        $autoDiscount = 0;
-        
-        // Promoción de primera compra (SIEMPRE se aplica si es primera compra, y SOLO esta)
-        if ($isFirstOrder) {
-            $firstOrderPromotion = $this->promotionModel->getFirstOrderPromotion();
-            if ($firstOrderPromotion) {
-                if ($firstOrderPromotion['tipo'] === 'porcentaje') {
-                    $firstDiscount = ($subtotal * $firstOrderPromotion['valor_descuento']) / 100;
+        // Prioridad 1: Si hay un código promocional aplicado manualmente, usar ese
+        if (isset($_SESSION['applied_promo_id'])) {
+            $manualPromotion = $this->promotionModel->getPromotionById($_SESSION['applied_promo_id']);
+            if ($manualPromotion && $manualPromotion['activo']) {
+                if ($manualPromotion['tipo'] === 'porcentaje') {
+                    $manualDiscount = ($subtotal * $manualPromotion['valor_descuento']) / 100;
                 } else {
-                    $firstDiscount = $firstOrderPromotion['valor_descuento'];
+                    $manualDiscount = $manualPromotion['valor_descuento'];
                 }
+                $discount = $manualDiscount;
+                $total = max(0, $subtotal - $discount);
+            } else {
+                // Si la promoción no es válida, limpiar la sesión
+                unset($_SESSION['applied_promo_id']);
+                unset($_SESSION['applied_promo_code']);
             }
-            // Si es primera compra, NO buscar otras promociones automáticas
-            $automaticPromotion = null;
         } else {
-            // Si NO es primera compra, buscar promociones automáticas por monto
-            $automaticPromotion = $this->promotionModel->getAutomaticPromotionByAmount($subtotal);
-            if ($automaticPromotion) {
-                if ($automaticPromotion['tipo'] === 'porcentaje') {
-                    $autoDiscount = ($subtotal * $automaticPromotion['valor_descuento']) / 100;
-                } else {
-                    $autoDiscount = $automaticPromotion['valor_descuento'];
+            // Prioridad 2: Si es primera compra, aplicar SOLO el descuento de primera compra (no otras promociones)
+            // Prioridad 3: Si NO es primera compra, aplicar SOLO UNA promoción automática (la mejor)
+            
+            $isFirstOrder = $this->orderModel->isFirstOrder($_SESSION['user_id']);
+            
+            // Promoción de primera compra (SIEMPRE se aplica si es primera compra, y SOLO esta)
+            if ($isFirstOrder) {
+                $firstOrderPromotion = $this->promotionModel->getFirstOrderPromotion();
+                if ($firstOrderPromotion) {
+                    if ($firstOrderPromotion['tipo'] === 'porcentaje') {
+                        $firstDiscount = ($subtotal * $firstOrderPromotion['valor_descuento']) / 100;
+                    } else {
+                        $firstDiscount = $firstOrderPromotion['valor_descuento'];
+                    }
+                }
+                // Si es primera compra, NO buscar otras promociones automáticas
+                $automaticPromotion = null;
+            } else {
+                // Si NO es primera compra, buscar promociones automáticas por monto
+                $automaticPromotion = $this->promotionModel->getAutomaticPromotionByAmount($subtotal);
+                if ($automaticPromotion) {
+                    if ($automaticPromotion['tipo'] === 'porcentaje') {
+                        $autoDiscount = ($subtotal * $automaticPromotion['valor_descuento']) / 100;
+                    } else {
+                        $autoDiscount = $automaticPromotion['valor_descuento'];
+                    }
                 }
             }
-        }
-        
-        // Calcular descuento total y total final
-        $discount = $firstDiscount + $autoDiscount;
-        $total = max(0, $subtotal - $discount);
-        
-        // Si no hay descuento de primera compra, limpiar la variable
-        if ($firstDiscount == 0) {
-            $firstOrderPromotion = null;
-        }
-        
-        // Si no hay descuento automático, limpiar la variable
-        if ($autoDiscount == 0) {
-            $automaticPromotion = null;
+            
+            // Calcular descuento total y total final
+            $discount = $firstDiscount + $autoDiscount;
+            $total = max(0, $subtotal - $discount);
+            
+            // Si no hay descuento de primera compra, limpiar la variable
+            if ($firstDiscount == 0) {
+                $firstOrderPromotion = null;
+            }
+            
+            // Si no hay descuento automático, limpiar la variable
+            if ($autoDiscount == 0) {
+                $automaticPromotion = null;
+            }
         }
         
         include 'views/checkout/index.php';

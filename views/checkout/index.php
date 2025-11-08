@@ -122,7 +122,18 @@ include 'views/layout/header.php';
                         <span><?php echo formatPrice($subtotal); ?></span>
                     </div>
                     <?php 
-                    // Mostrar descuentos por separado si ambos aplican
+                    // Mostrar descuento de código promocional manual
+                    if (isset($manualPromotion) && $manualPromotion && isset($manualDiscount) && $manualDiscount > 0): 
+                    ?>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-success">
+                            <i class="fas fa-gift me-1"></i>Descuento (<?php echo $manualPromotion['nombre']; ?>):
+                        </span>
+                        <span class="text-success">-<?php echo formatPrice($manualDiscount); ?></span>
+                    </div>
+                    <?php else: ?>
+                    <?php 
+                    // Mostrar descuentos automáticos por separado si ambos aplican
                     if (isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0): 
                     ?>
                     <div class="d-flex justify-content-between mb-2">
@@ -141,6 +152,7 @@ include 'views/layout/header.php';
                         </span>
                         <span class="text-success">-<?php echo formatPrice($autoDiscount); ?></span>
                     </div>
+                    <?php endif; ?>
                     <?php endif; ?>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Envío:</span>
@@ -188,7 +200,8 @@ include 'views/layout/header.php';
             </div>
 
             <?php 
-            $hasAnyDiscount = (isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0) || 
+            $hasAnyDiscount = (isset($manualPromotion) && $manualPromotion && isset($manualDiscount) && $manualDiscount > 0) ||
+                             (isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0) || 
                              (isset($automaticPromotion) && $automaticPromotion && isset($autoDiscount) && $autoDiscount > 0);
             if (!$hasAnyDiscount): 
             ?>
@@ -198,10 +211,16 @@ include 'views/layout/header.php';
                 </div>
                 <div class="card-body">
                     <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="Código promocional" id="promo_code">
+                        <input type="text" class="form-control" placeholder="Código promocional" id="promo_code" value="<?php echo isset($_SESSION['applied_promo_code']) ? htmlspecialchars($_SESSION['applied_promo_code']) : ''; ?>">
                         <button class="btn btn-outline-warning" type="button" id="apply_promo">Aplicar</button>
                     </div>
                     <div id="promo_message"></div>
+                    <?php if (isset($manualPromotion) && $manualPromotion && isset($manualDiscount) && $manualDiscount > 0): ?>
+                    <div class="alert alert-success mt-2 mb-0">
+                        <i class="fas fa-check-circle me-2"></i>
+                        ¡Código aplicado! <?php echo $manualPromotion['tipo'] === 'porcentaje' ? $manualPromotion['valor_descuento'] . '% de descuento' : formatPrice($manualPromotion['valor_descuento']) . ' de descuento'; ?>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php else: ?>
@@ -210,7 +229,12 @@ include 'views/layout/header.php';
                     <h5 class="mb-0"><i class="fas fa-gift me-2"></i>Promoción<?php echo ((isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0) && (isset($automaticPromotion) && $automaticPromotion && isset($autoDiscount) && $autoDiscount > 0)) ? 'es' : ''; ?> Aplicada<?php echo ((isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0) && (isset($automaticPromotion) && $automaticPromotion && isset($autoDiscount) && $autoDiscount > 0)) ? 's' : ''; ?></h5>
                 </div>
                 <div class="card-body">
-                    <?php if (isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0): ?>
+                    <?php if (isset($manualPromotion) && $manualPromotion && isset($manualDiscount) && $manualDiscount > 0): ?>
+                    <div class="alert alert-success mb-0">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong><?php echo htmlspecialchars($manualPromotion['nombre']); ?></strong> aplicada con código: <code><?php echo htmlspecialchars($_SESSION['applied_promo_code'] ?? ''); ?></code>
+                    </div>
+                    <?php elseif (isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0): ?>
                     <div class="alert alert-success mb-2">
                         <i class="fas fa-check-circle me-2"></i>
                         <strong><?php echo htmlspecialchars($firstOrderPromotion['nombre']); ?></strong> aplicada automáticamente
@@ -242,7 +266,7 @@ include 'views/layout/header.php';
 </div>
 
 <script>
-<?php if (!isset($firstOrderPromotion) || !$firstOrderPromotion || $discount == 0): ?>
+<?php if (!isset($manualPromotion) || !$manualPromotion || $manualDiscount == 0): ?>
 const applyPromoBtn = document.getElementById('apply_promo');
 if (applyPromoBtn) {
     applyPromoBtn.addEventListener('click', function() {
