@@ -18,11 +18,28 @@ class ProfileController {
 
     public function index() {
         $user = $this->userModel->getUserById($_SESSION['user_id']);
+        
+        // Obtener estadísticas reales
+        $orders = $this->orderModel->getUserOrders($_SESSION['user_id']);
+        $totalOrders = count($orders);
+        
+        // Obtener envases devueltos del usuario
+        $envasesDevueltos = $user['envases_devueltos'] ?? 0;
+        
         include 'views/profile/index.php';
     }
 
     public function orders() {
         $orders = $this->orderModel->getUserOrders($_SESSION['user_id']);
+        
+        // Obtener los items de cada pedido
+        $ordersWithItems = [];
+        foreach ($orders as $order) {
+            $order['items'] = $this->orderModel->getOrderItems($order['id']);
+            $ordersWithItems[] = $order;
+        }
+        
+        $orders = $ordersWithItems;
         include 'views/profile/orders.php';
     }
 
@@ -75,6 +92,26 @@ class ProfileController {
         }
         
         redirect('profile');
+    }
+
+    public function printOrder($id) {
+        $order = $this->orderModel->getOrderById($id);
+        
+        // Verificar que el pedido pertenece al usuario actual
+        if (!$order || $order['usuario_id'] != $_SESSION['user_id']) {
+            $_SESSION['error_message'] = 'Pedido no encontrado o no tienes permiso para verlo';
+            redirect('profile/orders');
+        }
+        
+        // Obtener información del usuario para mostrar en la factura
+        $user = $this->userModel->getUserById($_SESSION['user_id']);
+        $order['cliente_nombre'] = $user['nombre'] ?? 'N/A';
+        $order['cliente_email'] = $user['email'] ?? 'N/A';
+        
+        // Obtener los items del pedido
+        $order['items'] = $this->orderModel->getOrderItems($id);
+        
+        include 'views/profile/print-order.php';
     }
 }
 ?>

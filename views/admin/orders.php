@@ -1,5 +1,7 @@
 <?php 
 $title = 'Gestión de Pedidos';
+// Agregar DataTables CSS al head
+$extraHead = '<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">';
 include 'views/layout/header.php'; 
 ?>
 
@@ -7,7 +9,7 @@ include 'views/layout/header.php';
     <div class="row">
         <!-- Sidebar -->
         <div class="col-lg-2 col-md-3">
-            <div class="card">
+            <div class="card mb-3">
                 <div class="card-header bg-dark text-white">
                     <h6 class="mb-0"><i class="fas fa-cog me-2"></i>Panel Admin</h6>
                 </div>
@@ -30,11 +32,9 @@ include 'views/layout/header.php';
                     <a href="<?php echo SITE_URL; ?>admin/promotions" class="list-group-item list-group-item-action">
                         <i class="fas fa-gift me-2"></i>Promociones
                     </a>
-                    <a href="<?php echo SITE_URL; ?>admin/contacts" class="list-group-item list-group-item-action">
-                        <i class="fas fa-envelope me-2"></i>Contactos
-                    </a>
                 </div>
             </div>
+            
         </div>
 
         <!-- Main Content -->
@@ -49,17 +49,6 @@ include 'views/layout/header.php';
                         </a>
                     <?php endif; ?>
                 </h2>
-                <div class="d-flex gap-2">
-                    <select class="form-select" id="filterStatus">
-                        <option value="">Todos los estados</option>
-                        <option value="pendiente">Pendiente</option>
-                        <option value="confirmado">Confirmado</option>
-                        <option value="preparando">Preparando</option>
-                        <option value="enviado">Enviado</option>
-                        <option value="entregado">Entregado</option>
-                        <option value="cancelado">Cancelado</option>
-                    </select>
-                </div>
             </div>
 
             <!-- Estadísticas rápidas -->
@@ -108,7 +97,7 @@ include 'views/layout/header.php';
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover" id="ordersTable">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -132,7 +121,7 @@ include 'views/layout/header.php';
                                         </td>
                                         <td><?php echo formatDateTime($order['fecha_pedido']); ?></td>
                                         <td><?php echo formatPrice($order['total']); ?></td>
-                                        <td>
+                                        <td data-estado="<?php echo $order['estado']; ?>">
                                             <?php 
                                             $isFinalState = in_array($order['estado'], ['entregado', 'cancelado']);
                                             ?>
@@ -235,6 +224,9 @@ function viewOrderDetails(orderId) {
                 return;
             }
             
+            // Debug: verificar método de pago
+            console.log('Método de pago recibido:', data.metodo_pago);
+            
             // Formatear fecha
             const fecha = new Date(data.fecha_pedido);
             const fechaFormateada = fecha.toLocaleDateString('es-ES', {
@@ -301,6 +293,51 @@ function viewOrderDetails(orderId) {
                 itemsHtml = '<tr><td colspan="4" class="text-center">No hay items en este pedido</td></tr>';
             }
             
+            // Formatear método de pago
+            const metodosPago = {
+                'efectivo': 'Efectivo contra entrega',
+                'transferencia': 'Transferencia bancaria',
+                'nequi': 'Nequi',
+                'bancolombia': 'Bancolombia Ahorro a la Mano'
+            };
+            const metodoPago = data.metodo_pago || 'efectivo';
+            const metodoPagoTexto = metodosPago[metodoPago] || metodoPago;
+            
+            // Calcular subtotal de productos
+            let subtotalCalculado = 0;
+            if (data.items && data.items.length > 0) {
+                data.items.forEach(item => {
+                    subtotalCalculado += parseFloat(item.precio_unitario) * parseInt(item.cantidad);
+                });
+            }
+            
+            // Obtener información de envases devueltos
+            let infoPago = {};
+            try {
+                infoPago = data.info_pago ? JSON.parse(data.info_pago) : {};
+            } catch (e) {
+                infoPago = {};
+            }
+            let envasesDevueltos = infoPago.envases_devueltos || 0;
+            let descuentoEnvases = infoPago.descuento_envases || 0;
+            let subtotalSinDescuento = infoPago.subtotal_sin_descuento || 0;
+            
+            // Si no hay subtotal_sin_descuento guardado, usar el subtotal calculado
+            if (subtotalSinDescuento == 0 || subtotalSinDescuento == data.total) {
+                subtotalSinDescuento = subtotalCalculado;
+            }
+            
+            // Si hay diferencia entre subtotal y total, y no hay descuento guardado, calcularlo
+            if (descuentoEnvases == 0 && subtotalSinDescuento > data.total) {
+                descuentoEnvases = subtotalSinDescuento - data.total;
+                // Si el descuento es múltiplo de 2000, calcular cantidad de envases
+                if (descuentoEnvases > 0 && descuentoEnvases % 2000 == 0) {
+                    envasesDevueltos = descuentoEnvases / 2000;
+                }
+            }
+            
+            const subtotalFinal = subtotalSinDescuento;
+            
             // Construir HTML completo
             content.innerHTML = `
                 <div class="row mb-3">
@@ -308,8 +345,11 @@ function viewOrderDetails(orderId) {
                         <h6 class="text-muted mb-2">Información del Pedido</h6>
                         <p class="mb-1"><strong>Pedido #${String(data.id).padStart(3, '0')}</strong></p>
                         <p class="mb-1"><small class="text-muted">Fecha: ${fechaFormateada}</small></p>
-                        <p class="mb-0">
+                        <p class="mb-1">
                             <span class="badge ${estado.class}">${estado.text}</span>
+                        </p>
+                        <p class="mb-0">
+                            <small class="text-muted"><strong>Método de Pago:</strong> ${metodoPagoTexto}</small>
                         </p>
                     </div>
                     <div class="col-md-6">
@@ -350,6 +390,18 @@ function viewOrderDetails(orderId) {
                         </tbody>
                         <tfoot>
                             <tr>
+                                <th colspan="3" class="text-end">Subtotal:</th>
+                                <th class="text-end">${formatPrice(subtotalFinal)}</th>
+                            </tr>
+                            ${descuentoEnvases > 0 ? `
+                            <tr style="color: #28a745;">
+                                <th colspan="3" class="text-end">
+                                    Descuento por envases devueltos (${envasesDevueltos}):
+                                </th>
+                                <th class="text-end">-${formatPrice(descuentoEnvases)}</th>
+                            </tr>
+                            ` : ''}
+                            <tr>
                                 <th colspan="3" class="text-end">Total:</th>
                                 <th class="text-end text-primary-custom">${formatPrice(data.total)}</th>
                             </tr>
@@ -385,6 +437,81 @@ function printOrderFromModal() {
         printOrder(currentOrderId);
     }
 }
+</script>
+
+<!-- jQuery (requerido para DataTables) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+// Variable global para el filtro de estado
+var estadoFiltroGlobal = '';
+
+// Función de búsqueda personalizada para la columna de estado
+$.fn.dataTable.ext.search.push(
+    function(settings, data, dataIndex) {
+        // Solo aplicar a la tabla de pedidos
+        var tableId = $(settings.nTable).attr('id');
+        if (tableId !== 'ordersTable') {
+            return true;
+        }
+        
+        // Si no hay filtro, mostrar todas las filas
+        if (!estadoFiltroGlobal || estadoFiltroGlobal === '') {
+            return true;
+        }
+        
+        // Obtener la fila y su estado
+        var table = $('#ordersTable').DataTable();
+        var row = table.row(dataIndex).node();
+        var estadoRow = $(row).find('td[data-estado]').attr('data-estado');
+        
+        return estadoRow === estadoFiltroGlobal;
+    }
+);
+
+// Inicializar DataTable para pedidos
+$(document).ready(function() {
+    var table = $('#ordersTable').DataTable({
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+        },
+        pageLength: 25,
+        order: [[2, 'desc']], // Ordenar por fecha descendente
+        columnDefs: [
+            { orderable: false, targets: [5] } // Deshabilitar ordenamiento en acciones
+        ],
+        initComplete: function() {
+            var column = this.api().column(4);
+            
+            // Crear el select de filtro
+            var select = $('<select class="form-select form-select-sm"><option value="">Todos los estados</option></select>')
+                .appendTo($(column.header()).empty());
+            
+            // Obtener estados únicos del atributo data-estado
+            var estados = [];
+            $('#ordersTable tbody tr').each(function() {
+                var estado = $(this).find('td[data-estado]').attr('data-estado');
+                if (estado && estados.indexOf(estado) === -1) {
+                    estados.push(estado);
+                }
+            });
+            
+            estados.sort().forEach(function(estado) {
+                var estadoText = estado.charAt(0).toUpperCase() + estado.slice(1);
+                select.append('<option value="' + estado + '">' + estadoText + '</option>');
+            });
+            
+            // Evento change del select
+            select.on('change', function() {
+                estadoFiltroGlobal = $(this).val();
+                table.draw();
+            });
+        }
+    });
+});
 </script>
 
 <?php include 'views/layout/footer.php'; ?>

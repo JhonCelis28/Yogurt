@@ -74,7 +74,7 @@
                 <div class="col-md-6">
                     <p class="text-light mb-0">
                         &copy; <?php echo date('Y'); ?> <?php echo SITE_NAME; ?>. Todos los derechos reservados. 
-                        <br><img src="developer.png" alt="" style="width: 30px; height: 30px;">Dev (Jhon/Celis)
+                        <br><img src="<?php echo SITE_URL; ?>developer.png" alt="" style="width: 30px; height: 30px;">Dev (Jhon/Celis)
                     </p>
                 </div>
                 <div class="col-md-6 text-md-end">

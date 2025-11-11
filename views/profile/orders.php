@@ -21,12 +21,14 @@ include 'views/layout/header.php';
                 <a href="<?php echo SITE_URL; ?>profile" class="list-group-item list-group-item-action">
                     <i class="fas fa-user me-2"></i>Mi Perfil
                 </a>
-                <a href="<?php echo SITE_URL; ?>profile/orders" class="list-group-item list-group-item-action active">
-                    <i class="fas fa-shopping-bag me-2"></i>Mis Pedidos
-                </a>
-                <a href="<?php echo SITE_URL; ?>profile/addresses" class="list-group-item list-group-item-action">
-                    <i class="fas fa-map-marker-alt me-2"></i>Direcciones
-                </a>
+                <?php if (!isAdmin()): ?>
+                    <a href="<?php echo SITE_URL; ?>profile/orders" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-shopping-bag me-2"></i>Mis Pedidos
+                    </a>
+                    <a href="<?php echo SITE_URL; ?>profile/addresses" class="list-group-item list-group-item-action">
+                        <i class="fas fa-map-marker-alt me-2"></i>Direcciones
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -91,9 +93,14 @@ include 'views/layout/header.php';
                                     </div>
                                     <div class="col-md-4 text-end">
                                         <h5 class="text-primary-custom"><?php echo formatPrice($order['total']); ?></h5>
-                                        <button class="btn btn-outline-primary btn-sm" onclick="toggleOrderDetails(<?php echo $order['id']; ?>)">
-                                            <i class="fas fa-eye me-1"></i>Ver Detalles
-                                        </button>
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="toggleOrderDetails(<?php echo $order['id']; ?>)">
+                                                <i class="fas fa-eye me-1"></i>Ver Detalles
+                                            </button>
+                                            <button class="btn btn-outline-success btn-sm" onclick="printOrder(<?php echo $order['id']; ?>)">
+                                                <i class="fas fa-print me-1"></i>Imprimir
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -101,27 +108,126 @@ include 'views/layout/header.php';
                                 <div id="order-details-<?php echo $order['id']; ?>" class="mt-3" style="display: none;">
                                     <hr>
                                     <h6>Productos del pedido:</h6>
+                                    <?php 
+                                    $orderItems = isset($order['items']) ? $order['items'] : [];
+                                    if (!empty($orderItems)): 
+                                    ?>
                                     <div class="table-responsive">
                                         <table class="table table-sm">
                                             <thead>
                                                 <tr>
                                                     <th>Producto</th>
                                                     <th>Cantidad</th>
-                                                    <th>Precio</th>
+                                                    <th>Precio Unitario</th>
                                                     <th>Subtotal</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <!-- Aquí irían los detalles del pedido -->
+                                                <?php foreach ($orderItems as $item): 
+                                                    $subtotal = $item['cantidad'] * $item['precio_unitario'];
+                                                    $personalizaciones = !empty($item['personalizaciones']) ? json_decode($item['personalizaciones'], true) : null;
+                                                ?>
                                                 <tr>
-                                                    <td>Yogur Griego Natural</td>
-                                                    <td>2</td>
-                                                    <td>$12.000</td>
-                                                    <td>$24.000</td>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <?php if (!empty($item['imagen'])): ?>
+                                                            <img src="<?php echo SITE_URL; ?>assets/images/products/<?php echo $item['imagen']; ?>" 
+                                                                 alt="<?php echo htmlspecialchars($item['nombre']); ?>" 
+                                                                 class="me-2" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                                                            <?php endif; ?>
+                                                            <div>
+                                                                <strong><?php echo htmlspecialchars($item['nombre']); ?></strong>
+                                                                <?php if ($personalizaciones): ?>
+                                                                    <br><small class="text-muted">
+                                                                        <?php if (isset($personalizaciones['sabor'])): ?>
+                                                                            Sabor: <?php echo ucfirst($personalizaciones['sabor']); ?>
+                                                                        <?php endif; ?>
+                                                                        <?php if (isset($personalizaciones['endulzante'])): ?>
+                                                                            <?php if (isset($personalizaciones['sabor'])): ?>, <?php endif; ?>
+                                                                            Endulzante: <?php echo ucfirst(str_replace('_', ' ', $personalizaciones['endulzante'])); ?>
+                                                                        <?php endif; ?>
+                                                                    </small>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td><?php echo $item['cantidad']; ?></td>
+                                                    <td><?php echo formatPrice($item['precio_unitario']); ?></td>
+                                                    <td><strong><?php echo formatPrice($subtotal); ?></strong></td>
                                                 </tr>
+                                                <?php endforeach; ?>
                                             </tbody>
+                                            <tfoot>
+                                                <?php
+                                                // Calcular subtotal de productos
+                                                $subtotalProductos = 0;
+                                                if (!empty($orderItems)) {
+                                                    foreach ($orderItems as $item) {
+                                                        $subtotalProductos += $item['precio_unitario'] * $item['cantidad'];
+                                                    }
+                                                }
+                                                
+                                                // Obtener información de envases devueltos desde info_pago
+                                                $infoPago = !empty($order['info_pago']) ? json_decode($order['info_pago'], true) : [];
+                                                $envasesDevueltos = isset($infoPago['envases_devueltos']) ? (int)$infoPago['envases_devueltos'] : 0;
+                                                $descuentoEnvases = isset($infoPago['descuento_envases']) ? (float)$infoPago['descuento_envases'] : 0;
+                                                $subtotalSinDescuento = isset($infoPago['subtotal_sin_descuento']) ? (float)$infoPago['subtotal_sin_descuento'] : 0;
+                                                
+                                                // Si no hay subtotal_sin_descuento guardado, usar el subtotal de productos
+                                                if ($subtotalSinDescuento == 0 || $subtotalSinDescuento == $order['total']) {
+                                                    $subtotalSinDescuento = $subtotalProductos;
+                                                }
+                                                
+                                                // Si hay diferencia entre subtotal y total, y no hay descuento guardado, calcularlo
+                                                if ($descuentoEnvases == 0 && $subtotalSinDescuento > $order['total']) {
+                                                    $descuentoEnvases = $subtotalSinDescuento - $order['total'];
+                                                    // Si el descuento es múltiplo de 2000, calcular cantidad de envases
+                                                    if ($descuentoEnvases > 0 && $descuentoEnvases % 2000 == 0) {
+                                                        $envasesDevueltos = $descuentoEnvases / 2000;
+                                                    }
+                                                }
+                                                ?>
+                                                <tr>
+                                                    <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                                                    <td><strong><?php echo formatPrice($subtotalSinDescuento); ?></strong></td>
+                                                </tr>
+                                                <?php if ($descuentoEnvases > 0): ?>
+                                                <tr style="color: #28a745;">
+                                                    <td colspan="3" class="text-end">
+                                                        <strong>Descuento por envases devueltos (<?php echo $envasesDevueltos; ?>):</strong>
+                                                    </td>
+                                                    <td><strong>-<?php echo formatPrice($descuentoEnvases); ?></strong></td>
+                                                </tr>
+                                                <?php endif; ?>
+                                                <tr>
+                                                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                                    <td><strong class="text-primary"><?php echo formatPrice($order['total']); ?></strong></td>
+                                                </tr>
+                                            </tfoot>
                                         </table>
                                     </div>
+                                    <?php else: ?>
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>No se encontraron productos para este pedido.
+                                    </div>
+                                    <?php endif; ?>
+                                    
+                                    <?php if (isset($order['metodo_pago']) && !empty($order['metodo_pago'])): ?>
+                                    <div class="mt-3">
+                                        <p class="mb-1"><strong>Método de pago:</strong></p>
+                                        <span class="badge bg-secondary">
+                                            <?php 
+                                            $metodos = [
+                                                'efectivo' => 'Efectivo contra entrega',
+                                                'transferencia' => 'Transferencia bancaria',
+                                                'nequi' => 'Nequi',
+                                                'bancolombia' => 'Bancolombia Ahorro a la Mano'
+                                            ];
+                                            echo $metodos[$order['metodo_pago']] ?? ucfirst($order['metodo_pago']);
+                                            ?>
+                                        </span>
+                                    </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -150,6 +256,10 @@ function toggleOrderDetails(orderId) {
     } else {
         details.style.display = 'none';
     }
+}
+
+function printOrder(orderId) {
+    window.open('<?php echo SITE_URL; ?>profile/orders/print/' + orderId, '_blank');
 }
 </script>
 

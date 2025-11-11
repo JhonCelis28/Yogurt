@@ -31,6 +31,9 @@ define('SMTP_PORT', 587);
 define('SMTP_USERNAME', 'tu-email@gmail.com');
 define('SMTP_PASSWORD', 'tu-password');
 
+// Configurar zona horaria de Colombia
+date_default_timezone_set('America/Bogota');
+
 // Iniciar sesión
 if (session_status() == PHP_SESSION_NONE) {
     session_start();

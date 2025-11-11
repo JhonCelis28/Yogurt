@@ -1,5 +1,7 @@
 <?php 
 $title = 'Gestión de Productos';
+// Agregar DataTables CSS al head
+$extraHead = '<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">';
 include 'views/layout/header.php'; 
 ?>
 
@@ -30,9 +32,6 @@ include 'views/layout/header.php';
                     <a href="<?php echo SITE_URL; ?>admin/promotions" class="list-group-item list-group-item-action">
                         <i class="fas fa-gift me-2"></i>Promociones
                     </a>
-                    <a href="<?php echo SITE_URL; ?>admin/contacts" class="list-group-item list-group-item-action">
-                        <i class="fas fa-envelope me-2"></i>Contactos
-                    </a>
                 </div>
             </div>
         </div>
@@ -50,7 +49,7 @@ include 'views/layout/header.php';
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover" id="productsTable">
                             <thead>
                                 <tr>
                                     <th>Imagen</th>
@@ -248,7 +247,43 @@ include 'views/layout/header.php';
     </div>
 </div>
 
+<!-- jQuery (requerido para DataTables) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
 <script>
+// Inicializar DataTable para productos
+$(document).ready(function() {
+    $('#productsTable').DataTable({
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+        },
+        pageLength: 25,
+        order: [[1, 'asc']],
+        columnDefs: [
+            { orderable: false, targets: [0, 6] } // Deshabilitar ordenamiento en imagen y acciones
+        ],
+        initComplete: function() {
+            // Agregar filtro personalizado por categoría
+            this.api().columns(2).every(function() {
+                var column = this;
+                var select = $('<select class="form-select form-select-sm"><option value="">Todas las categorías</option></select>')
+                    .appendTo($(column.header()).empty())
+                    .on('change', function() {
+                        var val = $.fn.dataTable.util.escapeRegex($(this).val());
+                        column.search(val ? '^' + val + '$' : '', true, false).draw();
+                    });
+                
+                column.data().unique().sort().each(function(d) {
+                    select.append('<option value="' + d + '">' + d + '</option>');
+                });
+            });
+        }
+    });
+});
+
 function editProduct(id) {
     // Limpiar el formulario
     document.getElementById('editProductForm').reset();

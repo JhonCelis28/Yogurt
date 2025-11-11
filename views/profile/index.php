@@ -21,12 +21,14 @@ include 'views/layout/header.php';
                 <a href="<?php echo SITE_URL; ?>profile" class="list-group-item list-group-item-action active">
                     <i class="fas fa-user me-2"></i>Mi Perfil
                 </a>
-                <a href="<?php echo SITE_URL; ?>profile/orders" class="list-group-item list-group-item-action">
-                    <i class="fas fa-shopping-bag me-2"></i>Mis Pedidos
-                </a>
-                <a href="<?php echo SITE_URL; ?>profile/addresses" class="list-group-item list-group-item-action">
-                    <i class="fas fa-map-marker-alt me-2"></i>Direcciones
-                </a>
+                <?php if (!isAdmin()): ?>
+                    <a href="<?php echo SITE_URL; ?>profile/orders" class="list-group-item list-group-item-action">
+                        <i class="fas fa-shopping-bag me-2"></i>Mis Pedidos
+                    </a>
+                    <a href="<?php echo SITE_URL; ?>profile/addresses" class="list-group-item list-group-item-action">
+                        <i class="fas fa-map-marker-alt me-2"></i>Direcciones
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -113,7 +115,7 @@ include 'views/layout/header.php';
                     <div class="card text-center bg-primary text-white">
                         <div class="card-body">
                             <i class="fas fa-shopping-bag fa-2x mb-2"></i>
-                            <h4>12</h4>
+                            <h4><?php echo isset($totalOrders) ? $totalOrders : 0; ?></h4>
                             <p class="mb-0">Pedidos Realizados</p>
                         </div>
                     </div>
@@ -123,7 +125,7 @@ include 'views/layout/header.php';
                     <div class="card text-center bg-warning text-white">
                         <div class="card-body">
                             <i class="fas fa-recycle fa-2x mb-2"></i>
-                            <h4>15</h4>
+                            <h4><?php echo isset($envasesDevueltos) ? $envasesDevueltos : 0; ?></h4>
                             <p class="mb-0">Envases Devueltos</p>
                         </div>
                     </div>

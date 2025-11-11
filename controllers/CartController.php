@@ -80,5 +80,14 @@ class CartController {
             exit;
         }
     }
+
+    public function saveEnvases() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $cantidad = (int)($_POST['cantidad'] ?? 0);
+            $_SESSION['envases_devueltos'] = $cantidad;
+            echo json_encode(['success' => true, 'cantidad' => $cantidad]);
+            exit;
+        }
+    }
 }
 ?>

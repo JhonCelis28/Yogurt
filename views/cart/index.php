@@ -95,7 +95,11 @@ include 'views/layout/header.php';
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
                         <span>Subtotal:</span>
-                        <span id="cart-total"><?php echo formatPrice($total); ?></span>
+                        <span id="cart-subtotal"><?php echo formatPrice($total); ?></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2" id="descuento-envases-container" style="display: none;">
+                        <span class="text-success">Descuento por envases:</span>
+                        <span class="text-success" id="descuento-envases">$0</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Envío:</span>
@@ -104,14 +108,14 @@ include 'views/layout/header.php';
                     <hr>
                     <div class="d-flex justify-content-between mb-3">
                         <strong>Total:</strong>
-                        <strong class="text-primary-custom"><?php echo formatPrice($total); ?></strong>
+                        <strong class="text-primary-custom" id="cart-total"><?php echo formatPrice($total); ?></strong>
                     </div>
                     
                     <div class="d-grid gap-2">
-                        <a href="<?php echo SITE_URL; ?>checkout" class="btn btn-primary btn-lg">
+                        <a href="<?php echo SITE_URL; ?>checkout" class="btn btn-primary btn-lg" id="checkout-btn" onclick="saveEnvasesBeforeCheckout(event)">
                             <i class="fas fa-credit-card me-2"></i>Proceder al Pago
                         </a>
-                        <button onclick="contactWhatsApp('Hola, quiero hacer un pedido. Mi carrito tiene un total de <?php echo formatPrice($total); ?>')" 
+                        <button onclick="contactWhatsAppWithTotal()" 
                                 class="btn btn-success">
                             <i class="fab fa-whatsapp me-2"></i>Pedir por WhatsApp
                         </button>
@@ -143,11 +147,32 @@ include 'views/layout/header.php';
                         <small class="text-muted">$2.000 de descuento por cada envase de vidrio devuelto</small>
                     </div>
                     
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="envaseDevuelto">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="envaseDevuelto" onchange="toggleEnvasesInput()">
                         <label class="form-check-label" for="envaseDevuelto">
                             Tengo envases para devolver
                         </label>
+                    </div>
+                    
+                    <div id="envases-cantidad-container" style="display: none;">
+                        <label for="envases-cantidad" class="form-label small">Cantidad de envases:</label>
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateEnvasesQuantity(-1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" class="form-control form-control-sm text-center" 
+                                   id="envases-cantidad" 
+                                   value="0" 
+                                   min="0" 
+                                   onchange="updateTotalWithEnvases()"
+                                   oninput="updateTotalWithEnvases()">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateEnvasesQuantity(1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted d-block mt-1">
+                            Descuento: <span id="descuento-preview">$0</span>
+                        </small>
                     </div>
                 </div>
             </div>
@@ -155,5 +180,135 @@ include 'views/layout/header.php';
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+// Variables globales
+const DESCUENTO_POR_ENVASE = 2000;
+let subtotal = <?php echo $total; ?>;
+
+// Función para mostrar/ocultar el input de cantidad de envases
+function toggleEnvasesInput() {
+    const checkbox = document.getElementById('envaseDevuelto');
+    const container = document.getElementById('envases-cantidad-container');
+    const cantidadInput = document.getElementById('envases-cantidad');
+    
+    if (checkbox.checked) {
+        container.style.display = 'block';
+        cantidadInput.value = 1;
+        updateTotalWithEnvases();
+    } else {
+        container.style.display = 'none';
+        cantidadInput.value = 0;
+        updateTotalWithEnvases();
+    }
+}
+
+// Función para actualizar la cantidad de envases con los botones +/-
+function updateEnvasesQuantity(change) {
+    const cantidadInput = document.getElementById('envases-cantidad');
+    let currentValue = parseInt(cantidadInput.value) || 0;
+    let newValue = currentValue + change;
+    
+    if (newValue < 0) {
+        newValue = 0;
+    }
+    
+    cantidadInput.value = newValue;
+    updateTotalWithEnvases();
+}
+
+// Función para actualizar el total con el descuento de envases
+function updateTotalWithEnvases() {
+    const cantidadInput = document.getElementById('envases-cantidad');
+    const cantidad = parseInt(cantidadInput.value) || 0;
+    const descuento = cantidad * DESCUENTO_POR_ENVASE;
+    const totalConDescuento = subtotal - descuento;
+    
+    // Actualizar el preview del descuento
+    document.getElementById('descuento-preview').textContent = formatPrice(descuento);
+    
+    // Actualizar el descuento en el resumen
+    const descuentoContainer = document.getElementById('descuento-envases-container');
+    const descuentoSpan = document.getElementById('descuento-envases');
+    
+    if (descuento > 0) {
+        descuentoContainer.style.display = 'flex';
+        descuentoSpan.textContent = '-' + formatPrice(descuento);
+    } else {
+        descuentoContainer.style.display = 'none';
+        descuentoSpan.textContent = '$0';
+    }
+    
+    // Actualizar el total
+    document.getElementById('cart-total').textContent = formatPrice(Math.max(0, totalConDescuento));
+    
+    // Guardar en sesión (localStorage temporalmente, o podrías hacer una petición AJAX)
+    saveEnvasesToSession(cantidad);
+}
+
+// Función para formatear precio
+function formatPrice(price) {
+    return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0
+    }).format(price);
+}
+
+// Función para guardar la cantidad de envases en la sesión
+function saveEnvasesToSession(cantidad) {
+    // Guardar en localStorage temporalmente
+    localStorage.setItem('envases_devueltos', cantidad);
+    
+    // También hacer una petición AJAX para guardar en la sesión del servidor
+    fetch('<?php echo SITE_URL; ?>cart/save-envases', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'cantidad=' + cantidad
+    }).catch(error => {
+        console.error('Error al guardar envases:', error);
+    });
+}
+
+// Función para guardar envases antes de ir al checkout
+function saveEnvasesBeforeCheckout(event) {
+    const cantidad = parseInt(document.getElementById('envases-cantidad').value) || 0;
+    saveEnvasesToSession(cantidad);
+    // No prevenir el comportamiento por defecto, dejar que continúe al checkout
+}
+
+// Función para actualizar el mensaje de WhatsApp con el total correcto
+function contactWhatsAppWithTotal() {
+    const cantidad = parseInt(document.getElementById('envases-cantidad').value) || 0;
+    const descuento = cantidad * DESCUENTO_POR_ENVASE;
+    const totalFinal = Math.max(0, subtotal - descuento);
+    const totalFormateado = formatPrice(totalFinal);
+    contactWhatsApp('Hola, quiero hacer un pedido. Mi carrito tiene un total de ' + totalFormateado);
+}
+
+// Cargar cantidad de envases guardada al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    // Intentar cargar desde la sesión del servidor primero
+    const savedCantidad = <?php echo isset($_SESSION['envases_devueltos']) ? (int)$_SESSION['envases_devueltos'] : 0; ?>;
+    
+    if (savedCantidad > 0) {
+        document.getElementById('envaseDevuelto').checked = true;
+        document.getElementById('envases-cantidad-container').style.display = 'block';
+        document.getElementById('envases-cantidad').value = savedCantidad;
+        updateTotalWithEnvases();
+    } else {
+        // Si no hay en sesión, intentar desde localStorage
+        const localCantidad = localStorage.getItem('envases_devueltos');
+        if (localCantidad && localCantidad > 0) {
+            document.getElementById('envaseDevuelto').checked = true;
+            document.getElementById('envases-cantidad-container').style.display = 'block';
+            document.getElementById('envases-cantidad').value = localCantidad;
+            updateTotalWithEnvases();
+        }
+    }
+});
+</script>
 
 <?php include 'views/layout/footer.php'; ?>

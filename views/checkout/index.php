@@ -97,11 +97,43 @@ include 'views/layout/header.php';
                                 <i class="fas fa-university me-2"></i>Transferencia bancaria
                             </label>
                         </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="metodo_pago" id="nequi" value="nequi">
+                            <label class="form-check-label" for="nequi">
+                                <i class="fas fa-mobile-alt me-2"></i>Nequi
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="metodo_pago" id="bancolombia" value="bancolombia">
+                            <label class="form-check-label" for="bancolombia">
+                                <i class="fas fa-wallet me-2"></i>Bancolombia Ahorro a la Mano
+                            </label>
+                        </div>
+                        
+                        <!-- Campo para número de cuenta (Transferencia bancaria) -->
+                        <div id="transferencia_fields" style="display: none;" class="mt-3">
+                            <div class="mb-3">
+                                <label for="numero_cuenta" class="form-label">Número de Cuenta *</label>
+                                <input type="text" class="form-control" id="numero_cuenta" name="numero_cuenta" 
+                                       placeholder="Ingresa tu número de cuenta" pattern="[0-9]{6,20}" maxlength="20">
+                                <small class="form-text text-muted">Número de cuenta desde donde realizarás la transferencia</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Campo para número de celular (Nequi y Bancolombia) -->
+                        <div id="celular_fields" style="display: none;" class="mt-3">
+                            <div class="mb-3">
+                                <label for="numero_celular" class="form-label">Número de Celular (Colombia) *</label>
+                                <input type="tel" class="form-control" id="numero_celular" name="numero_celular" 
+                                       placeholder="Ej: 3001234567" pattern="[0-9]{10}" maxlength="10">
+                                <small class="form-text text-muted">Ingresa tu número de celular de 10 dígitos</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-primary btn-lg">
+                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
                         <i class="fas fa-check-circle me-2"></i>Confirmar Pedido
                     </button>
                     <a href="<?php echo SITE_URL; ?>cart" class="btn btn-outline-secondary">
@@ -121,6 +153,19 @@ include 'views/layout/header.php';
                         <span>Subtotal:</span>
                         <span><?php echo formatPrice($subtotal); ?></span>
                     </div>
+                    <?php 
+                    // Mostrar descuento por envases devueltos
+                    $envasesDevueltos = isset($_SESSION['envases_devueltos']) ? (int)$_SESSION['envases_devueltos'] : 0;
+                    $descuentoEnvases = $envasesDevueltos * 2000;
+                    if ($descuentoEnvases > 0):
+                    ?>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-success">
+                            <i class="fas fa-recycle me-1"></i>Descuento por envases devueltos (<?php echo $envasesDevueltos; ?>):
+                        </span>
+                        <span class="text-success">-<?php echo formatPrice($descuentoEnvases); ?></span>
+                    </div>
+                    <?php endif; ?>
                     <?php 
                     // Mostrar descuento de código promocional manual
                     if (isset($manualPromotion) && $manualPromotion && isset($manualDiscount) && $manualDiscount > 0): 
@@ -266,6 +311,65 @@ include 'views/layout/header.php';
 </div>
 
 <script>
+// Manejar la selección de método de pago
+document.addEventListener('DOMContentLoaded', function() {
+    const metodoPagoInputs = document.querySelectorAll('input[name="metodo_pago"]');
+    const celularFields = document.getElementById('celular_fields');
+    const numeroCelular = document.getElementById('numero_celular');
+    const form = document.querySelector('form');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    const transferenciaFields = document.getElementById('transferencia_fields');
+    const numeroCuenta = document.getElementById('numero_cuenta');
+    
+    // Mostrar/ocultar campos según el método seleccionado
+    metodoPagoInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Ocultar todos los campos primero
+            celularFields.style.display = 'none';
+            transferenciaFields.style.display = 'none';
+            numeroCelular.required = false;
+            numeroCuenta.required = false;
+            
+            // Mostrar campos según el método seleccionado
+            if (this.value === 'nequi' || this.value === 'bancolombia') {
+                celularFields.style.display = 'block';
+                numeroCelular.required = true;
+            } else if (this.value === 'transferencia') {
+                transferenciaFields.style.display = 'block';
+                numeroCuenta.required = true;
+            }
+        });
+    });
+    
+    // Validación del formulario antes de enviar
+    form.addEventListener('submit', function(e) {
+        const metodoPago = document.querySelector('input[name="metodo_pago"]:checked').value;
+        
+        // Validar campos según el método de pago
+        if (metodoPago === 'transferencia') {
+            const cuenta = numeroCuenta.value;
+            if (!cuenta || cuenta.length < 6 || !/^[0-9]{6,20}$/.test(cuenta)) {
+                e.preventDefault();
+                alert('Por favor ingresa un número de cuenta válido');
+                numeroCuenta.focus();
+                return false;
+            }
+        } else if (metodoPago === 'nequi' || metodoPago === 'bancolombia') {
+            const celular = numeroCelular.value;
+            if (!celular || celular.length !== 10 || !/^[0-9]{10}$/.test(celular)) {
+                e.preventDefault();
+                alert('Por favor ingresa un número de celular válido de 10 dígitos');
+                numeroCelular.focus();
+                return false;
+            }
+        }
+        
+        // Si todo está bien, enviar el formulario normalmente
+        return true;
+    });
+});
+
 <?php if (!isset($manualPromotion) || !$manualPromotion || $manualDiscount == 0): ?>
 const applyPromoBtn = document.getElementById('apply_promo');
 if (applyPromoBtn) {

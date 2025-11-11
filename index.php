@@ -98,6 +98,9 @@ try {
             $cartController = new CartController();
             
             switch ($action) {
+                case 'save-envases':
+                    $cartController->saveEnvases();
+                    break;
                 case 'index':
                     $cartController->index();
                     break;
@@ -131,7 +134,11 @@ try {
                     $profileController->index();
                     break;
                 case 'orders':
-                    $profileController->orders();
+                    if (isset($segments[2]) && $segments[2] === 'print' && isset($param2)) {
+                        $profileController->printOrder($param2);
+                    } else {
+                        $profileController->orders();
+                    }
                     break;
                 case 'addresses':
                     $profileController->addresses();
@@ -166,6 +173,12 @@ try {
                     break;
                 case 'validate-promo':
                     $checkoutController->validatePromo();
+                    break;
+                case 'payment-gateway':
+                    $checkoutController->paymentGateway();
+                    break;
+                case 'process-payment':
+                    $checkoutController->processPayment();
                     break;
                 case 'success':
                     $checkoutController->success($param);

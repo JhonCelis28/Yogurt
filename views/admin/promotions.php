@@ -30,9 +30,6 @@ include 'views/layout/header.php';
                     <a href="<?php echo SITE_URL; ?>admin/promotions" class="list-group-item list-group-item-action active">
                         <i class="fas fa-gift me-2"></i>Promociones
                     </a>
-                    <a href="<?php echo SITE_URL; ?>admin/contacts" class="list-group-item list-group-item-action">
-                        <i class="fas fa-envelope me-2"></i>Contactos
-                    </a>
                 </div>
             </div>
         </div>

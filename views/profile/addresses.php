@@ -21,12 +21,14 @@ include 'views/layout/header.php';
                 <a href="<?php echo SITE_URL; ?>profile" class="list-group-item list-group-item-action">
                     <i class="fas fa-user me-2"></i>Mi Perfil
                 </a>
-                <a href="<?php echo SITE_URL; ?>profile/orders" class="list-group-item list-group-item-action">
-                    <i class="fas fa-shopping-bag me-2"></i>Mis Pedidos
-                </a>
-                <a href="<?php echo SITE_URL; ?>profile/addresses" class="list-group-item list-group-item-action active">
-                    <i class="fas fa-map-marker-alt me-2"></i>Direcciones
-                </a>
+                <?php if (!isAdmin()): ?>
+                    <a href="<?php echo SITE_URL; ?>profile/orders" class="list-group-item list-group-item-action">
+                        <i class="fas fa-shopping-bag me-2"></i>Mis Pedidos
+                    </a>
+                    <a href="<?php echo SITE_URL; ?>profile/addresses" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-map-marker-alt me-2"></i>Direcciones
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
 

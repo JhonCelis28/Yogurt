@@ -14,10 +14,22 @@ class Order {
         try {
             $this->conn->beginTransaction();
 
+            // Verificar si las columnas metodo_pago e info_pago existen
+            $hasPaymentColumns = $this->checkPaymentColumnsExist();
+            
             // Crear el pedido
-            $query = "INSERT INTO " . $this->table . " 
-                      (usuario_id, total, estado, direccion_entrega, telefono_contacto, notas, fecha_pedido) 
-                      VALUES (:usuario_id, :total, 'pendiente', :direccion_entrega, :telefono_contacto, :notas, NOW())";
+            $metodoPago = $data['metodo_pago'] ?? 'efectivo';
+            $infoPago = $data['info_pago'] ?? null;
+            
+            if ($hasPaymentColumns) {
+                $query = "INSERT INTO " . $this->table . " 
+                          (usuario_id, total, estado, direccion_entrega, telefono_contacto, notas, metodo_pago, info_pago, fecha_pedido) 
+                          VALUES (:usuario_id, :total, 'pendiente', :direccion_entrega, :telefono_contacto, :notas, :metodo_pago, :info_pago, NOW())";
+            } else {
+                $query = "INSERT INTO " . $this->table . " 
+                          (usuario_id, total, estado, direccion_entrega, telefono_contacto, notas, fecha_pedido) 
+                          VALUES (:usuario_id, :total, 'pendiente', :direccion_entrega, :telefono_contacto, :notas, NOW())";
+            }
 
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':usuario_id', $data['usuario_id']);
@@ -25,6 +37,12 @@ class Order {
             $stmt->bindParam(':direccion_entrega', $data['direccion_entrega']);
             $stmt->bindParam(':telefono_contacto', $data['telefono_contacto']);
             $stmt->bindParam(':notas', $data['notas']);
+            
+            if ($hasPaymentColumns) {
+                $stmt->bindParam(':metodo_pago', $metodoPago);
+                $stmt->bindParam(':info_pago', $infoPago);
+            }
+            
             $stmt->execute();
 
             $orderId = $this->conn->lastInsertId();
@@ -42,6 +60,18 @@ class Order {
 
         } catch (Exception $e) {
             $this->conn->rollback();
+            error_log('Error al crear pedido: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function checkPaymentColumnsExist() {
+        try {
+            $query = "SHOW COLUMNS FROM " . $this->table . " LIKE 'metodo_pago'";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            return $stmt->rowCount() > 0;
+        } catch (Exception $e) {
             return false;
         }
     }

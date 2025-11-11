@@ -14,6 +14,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <?php if (isset($extraHead)) echo $extraHead; ?>
 
     <style>
         :root {
@@ -350,7 +352,7 @@
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
             <a class="navbar-brand" href="<?php echo SITE_URL; ?>">
-                <img src="logo1.png" class="me-4">
+                <img src="<?php echo SITE_URL; ?>logo1.png" class="me-4" alt="Logo">
                 <span class="text-primary-custom"></span>
             </a>
 
@@ -421,9 +423,11 @@
                                 <li><a class="dropdown-item" href="<?php echo SITE_URL; ?>profile">
                                         <i class="fas fa-user me-2"></i>Mi Perfil
                                     </a></li>
-                                <li><a class="dropdown-item" href="<?php echo SITE_URL; ?>profile/orders">
-                                        <i class="fas fa-shopping-bag me-2"></i>Mis Pedidos
-                                    </a></li>
+                                <?php if (!isAdmin()): ?>
+                                    <li><a class="dropdown-item" href="<?php echo SITE_URL; ?>profile/orders">
+                                            <i class="fas fa-shopping-bag me-2"></i>Mis Pedidos
+                                        </a></li>
+                                <?php endif; ?>
                                 <?php if (isAdmin()): ?>
                                     <li>
                                         <hr class="dropdown-divider">

@@ -6,7 +6,7 @@ require_once 'config/config.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>#<?php echo str_pad($order['id'], 3, '0', STR_PAD_LEFT); ?></title>
+    <title>Factura #<?php echo str_pad($order['id'], 3, '0', STR_PAD_LEFT); ?></title>
     <style>
         @media print {
             body { margin: 0; padding: 20px; }

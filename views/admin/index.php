@@ -30,9 +30,6 @@ include 'views/layout/header.php';
                     <a href="<?php echo SITE_URL; ?>admin/promotions" class="list-group-item list-group-item-action">
                         <i class="fas fa-gift me-2"></i>Promociones
                     </a>
-                    <a href="<?php echo SITE_URL; ?>admin/contacts" class="list-group-item list-group-item-action">
-                        <i class="fas fa-envelope me-2"></i>Contactos
-                    </a>
                 </div>
             </div>
         </div>
@@ -42,7 +39,11 @@ include 'views/layout/header.php';
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="text-primary-custom">Dashboard</h2>
                 <div class="text-muted">
-                    <i class="fas fa-calendar me-2"></i><?php echo date('d/m/Y H:i'); ?>
+                    <i class="fas fa-calendar me-2"></i><?php 
+                    // Asegurar zona horaria de Colombia
+                    date_default_timezone_set('America/Bogota');
+                    echo date('d/m/Y H:i'); 
+                    ?>
                 </div>
             </div>
 
