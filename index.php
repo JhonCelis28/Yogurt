@@ -64,9 +64,6 @@ try {
                 case 'category':
                     $productController->category($param);
                     break;
-                case 'personalized':
-                    $productController->personalized();
-                    break;
                 case 'search':
                     $productController->search();
                     break;

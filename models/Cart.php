@@ -34,32 +34,88 @@ class Cart {
     }
 
     public function getCartItems($userId) {
-        $query = "SELECT c.*, p.nombre, p.precio, p.imagen, p.stock,
-                         (c.cantidad * p.precio) as subtotal
+        $query = "SELECT c.*, p.nombre, p.precio, p.imagen, p.stock
                   FROM " . $this->table . " c 
                   LEFT JOIN productos p ON c.producto_id = p.id 
-                  WHERE c.usuario_id = :usuario_id AND p.activo = 1 
+                  WHERE c.usuario_id = :usuario_id 
+                  AND (p.activo = 1 OR c.producto_id IN (999, 998))
                   ORDER BY c.fecha_agregado DESC";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':usuario_id', $userId);
         $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Procesar items para productos personalizados
+        foreach ($items as &$item) {
+            if ($item['producto_id'] == 999 || $item['producto_id'] == 998) {
+                // Producto personalizado
+                $item['nombre'] = $item['producto_id'] == 999 ? 'Yogurt Personalizado' : 'Torta Personalizada';
+                $item['imagen'] = $item['producto_id'] == 999 ? 'yogurt1.jpg' : 'tortas2.jpg';
+                
+                // Calcular precio basado en personalizaciones
+                $precioCalculado = $this->calculatePersonalizedPrice($item['producto_id'], $item['personalizaciones']);
+                $item['precio'] = $precioCalculado;
+                $item['stock'] = 999;
+            } else if ($item['personalizaciones']) {
+                // Producto normal con personalizaciones (como producto ID 7)
+                // Verificar si es una torta con harina especial
+                $personalizaciones = json_decode($item['personalizaciones'], true);
+                if ($personalizaciones && isset($personalizaciones['harina'])) {
+                    $harina = trim(strtolower($personalizaciones['harina']));
+                    if ($harina === 'almendras' || $harina === 'coco') {
+                        // Precio fijo de $50.000 para harina especial
+                        $item['precio'] = 50000;
+                    }
+                }
+            }
+            $item['subtotal'] = $item['cantidad'] * ($item['precio'] ?? 0);
+        }
+        
+        return $items;
+    }
+    
+    private function calculatePersonalizedPrice($productId, $personalizacionesJson) {
+        if (!$personalizacionesJson) {
+            return $productId == 999 ? 15000 : 35000;
+        }
+        
+        $personalizaciones = json_decode($personalizacionesJson, true);
+        if (!$personalizaciones || json_last_error() !== JSON_ERROR_NONE) {
+            return $productId == 999 ? 15000 : 35000;
+        }
+        
+        // Precio base para yogurt
+        if ($productId == 999) {
+            return 15000;
+        }
+        
+        // Precio para torta según opciones
+        if ($productId == 998) {
+            // Si tiene harina especial (almendras o coco), precio fijo de $50.000
+            $harina = isset($personalizaciones['harina']) ? trim(strtolower($personalizaciones['harina'])) : 'normal';
+            
+            if ($harina === 'almendras' || $harina === 'coco') {
+                return 50000;
+            }
+            
+            // Precio base normal
+            return 35000;
+        }
+        
+        return 0;
     }
 
     public function getCartTotal($userId) {
-        $query = "SELECT SUM(c.cantidad * p.precio) as total 
-                  FROM " . $this->table . " c 
-                  LEFT JOIN productos p ON c.producto_id = p.id 
-                  WHERE c.usuario_id = :usuario_id AND p.activo = 1";
+        $items = $this->getCartItems($userId);
+        $total = 0;
         
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':usuario_id', $userId);
-        $stmt->execute();
-
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result['total'] ?? 0;
+        foreach ($items as $item) {
+            $total += $item['subtotal'];
+        }
+        
+        return $total;
     }
 
     public function updateQuantity($cartId, $quantity) {

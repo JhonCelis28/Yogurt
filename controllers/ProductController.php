@@ -40,10 +40,6 @@ class ProductController {
         include 'views/products/category.php';
     }
 
-    public function personalized() {
-        include 'views/products/personalized.php';
-    }
-
     public function search() {
         $searchTerm = sanitizeInput($_GET['q'] ?? '');
         $products = [];

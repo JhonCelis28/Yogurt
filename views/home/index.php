@@ -21,7 +21,7 @@ include 'views/layout/header.php';
                         <a href="../proyectoyogurt/products" class="btn btn-primary btn-lg">
                             <i class="fas fa-shopping-bag me-2"></i>Ver Productos
                         </a>
-                        <a href="<?php echo SITE_URL; ?>products/personalized" class="btn btn-success btn-lg">
+                        <a href="<?php echo SITE_URL; ?>products/category/5" class="btn btn-success btn-lg">
                             <i class="fas fa-palette me-2"></i>Personalizar
                         </a>
                     </div>

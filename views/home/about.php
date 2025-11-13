@@ -145,7 +145,7 @@ include 'views/layout/header.php';
                 <div class="col-lg-4 col-md-6 text-center">
                     <div class="card border-0 shadow-sm">
                         <div class="card-body p-4">
-                            <img src="<?php echo SITE_URL; ?>assets/images/team/founder.jpg" alt="Fundadora" class="rounded-circle mb-3" width="120" height="120">
+                            <img src="Bellanira.jpg" alt="Fundadora" class="rounded-circle mb-3" width="120" height="120">
                             <h5>Bellanira Quintero</h5>
                             <p class="text-muted">Fundadora y Maestra Artesana</p>
                             <p class="small">Con más de 15 años de experiencia en productos lácteos artesanales.</p>
@@ -167,7 +167,7 @@ include 'views/layout/header.php';
                 <div class="col-lg-4 col-md-6 text-center">
                     <div class="card border-0 shadow-sm">
                         <div class="card-body p-4">
-                            <img src="<?php echo SITE_URL; ?>assets/images/team/quality.jpg" alt="Control de Calidad" class="rounded-circle mb-3" width="120" height="120">
+                            <img src="Daniel.jpg" alt="Control de Calidad" class="rounded-circle mb-3" width="120" height="120">
                             <h5>Daniel Celis</h5>
                             <p class="text-muted">Control de Calidad</p>
                             <p class="small">Garantiza que cada producto cumpla con nuestros altos estándares.</p>

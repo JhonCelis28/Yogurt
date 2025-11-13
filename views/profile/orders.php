@@ -167,23 +167,68 @@ include 'views/layout/header.php';
                                                     }
                                                 }
                                                 
-                                                // Obtener información de envases devueltos desde info_pago
+                                                // Obtener información de envases devueltos y promociones desde info_pago
                                                 $infoPago = !empty($order['info_pago']) ? json_decode($order['info_pago'], true) : [];
                                                 $envasesDevueltos = isset($infoPago['envases_devueltos']) ? (int)$infoPago['envases_devueltos'] : 0;
                                                 $descuentoEnvases = isset($infoPago['descuento_envases']) ? (float)$infoPago['descuento_envases'] : 0;
                                                 $subtotalSinDescuento = isset($infoPago['subtotal_sin_descuento']) ? (float)$infoPago['subtotal_sin_descuento'] : 0;
+                                                $descuentoPromocion = isset($infoPago['descuento_promocion']) ? (float)$infoPago['descuento_promocion'] : 0;
+                                                $promocionNombre = isset($infoPago['promocion_nombre']) ? $infoPago['promocion_nombre'] : '';
                                                 
                                                 // Si no hay subtotal_sin_descuento guardado, usar el subtotal de productos
                                                 if ($subtotalSinDescuento == 0 || $subtotalSinDescuento == $order['total']) {
                                                     $subtotalSinDescuento = $subtotalProductos;
                                                 }
                                                 
-                                                // Si hay diferencia entre subtotal y total, y no hay descuento guardado, calcularlo
-                                                if ($descuentoEnvases == 0 && $subtotalSinDescuento > $order['total']) {
-                                                    $descuentoEnvases = $subtotalSinDescuento - $order['total'];
-                                                    // Si el descuento es múltiplo de 2000, calcular cantidad de envases
-                                                    if ($descuentoEnvases > 0 && $descuentoEnvases % 2000 == 0) {
-                                                        $envasesDevueltos = $descuentoEnvases / 2000;
+                                                // Calcular el subtotal después de aplicar descuento de envases
+                                                $subtotalConEnvases = $subtotalSinDescuento - $descuentoEnvases;
+                                                
+                                                // Si hay descuento de promoción guardado, usarlo
+                                                // Si no hay descuento guardado pero hay diferencia, verificar si es por envases o promoción
+                                                if ($descuentoPromocion == 0 && $subtotalConEnvases > $order['total']) {
+                                                    $diferencia = $subtotalConEnvases - $order['total'];
+                                                    
+                                                    if ($diferencia > 0) {
+                                                        // Verificar si es primera compra del usuario (más probable que sea promoción)
+                                                        require_once 'models/Order.php';
+                                                        $orderModel = new Order();
+                                                        $userOrders = $orderModel->getUserOrders($order['usuario_id']);
+                                                        $isFirstOrder = count($userOrders) == 1 || (count($userOrders) > 0 && $userOrders[0]['id'] == $order['id']);
+                                                        
+                                                        // Verificar si el descuento coincide con una promoción de primera compra
+                                                        require_once 'models/Promotion.php';
+                                                        $promotionModel = new Promotion();
+                                                        $firstOrderPromo = $promotionModel->getFirstOrderPromotion();
+                                                        
+                                                        $esPromocion = false;
+                                                        if ($isFirstOrder && $firstOrderPromo) {
+                                                            // Calcular el descuento esperado de primera compra
+                                                            if ($firstOrderPromo['tipo'] === 'porcentaje') {
+                                                                $descuentoEsperado = ($subtotalConEnvases * $firstOrderPromo['valor_descuento']) / 100;
+                                                                // Si el descuento coincide (con un margen de error pequeño), es promoción
+                                                                if (abs($descuentoEsperado - $diferencia) < 100) {
+                                                                    $esPromocion = true;
+                                                                    $descuentoPromocion = $diferencia;
+                                                                    $promocionNombre = $firstOrderPromo['nombre'];
+                                                                }
+                                                            } else {
+                                                                // Si es descuento fijo y coincide exactamente
+                                                                if (abs($firstOrderPromo['valor_descuento'] - $diferencia) < 100) {
+                                                                    $esPromocion = true;
+                                                                    $descuentoPromocion = $diferencia;
+                                                                    $promocionNombre = $firstOrderPromo['nombre'];
+                                                                }
+                                                            }
+                                                        }
+                                                        
+                                                        // Si no es promoción y es múltiplo de 2000, probablemente es envases
+                                                        if (!$esPromocion && $diferencia % 2000 == 0 && $descuentoEnvases == 0) {
+                                                            $descuentoEnvases = $diferencia;
+                                                            $envasesDevueltos = $descuentoEnvases / 2000;
+                                                        } else if (!$esPromocion && $diferencia % 2000 != 0) {
+                                                            // Si no es múltiplo de 2000, probablemente es una promoción
+                                                            $descuentoPromocion = $diferencia;
+                                                        }
                                                     }
                                                 }
                                                 ?>
@@ -197,6 +242,14 @@ include 'views/layout/header.php';
                                                         <strong>Descuento por envases devueltos (<?php echo $envasesDevueltos; ?>):</strong>
                                                     </td>
                                                     <td><strong>-<?php echo formatPrice($descuentoEnvases); ?></strong></td>
+                                                </tr>
+                                                <?php endif; ?>
+                                                <?php if ($descuentoPromocion > 0): ?>
+                                                <tr style="color: #ff6b6b;">
+                                                    <td colspan="3" class="text-end">
+                                                        <strong>Descuento por promoción<?php echo $promocionNombre ? ' (' . htmlspecialchars($promocionNombre) . ')' : ''; ?>:</strong>
+                                                    </td>
+                                                    <td><strong>-<?php echo formatPrice($descuentoPromocion); ?></strong></td>
                                                 </tr>
                                                 <?php endif; ?>
                                                 <tr>

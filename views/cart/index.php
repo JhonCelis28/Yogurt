@@ -1,6 +1,21 @@
 <?php 
 $title = 'Carrito de Compras';
-include 'views/layout/header.php'; 
+
+// Capturar mensajes del carrito antes de que el header los muestre
+$cartSuccessMessage = null;
+$cartErrorMessage = null;
+
+if (isset($_SESSION['success_message']) && ($_SESSION['success_message'] === 'Carrito vaciado' || $_SESSION['success_message'] === 'Producto eliminado del carrito')) {
+    $cartSuccessMessage = $_SESSION['success_message'];
+    unset($_SESSION['success_message']);
+}
+
+if (isset($_SESSION['error_message']) && (strpos($_SESSION['error_message'], 'carrito') !== false || strpos($_SESSION['error_message'], 'Carrito') !== false)) {
+    $cartErrorMessage = $_SESSION['error_message'];
+    unset($_SESSION['error_message']);
+}
+
+include 'views/layout/header.php';
 ?>
 
 <div class="container py-5">
@@ -15,7 +30,15 @@ include 'views/layout/header.php';
                         <?php foreach ($cartItems as $item): ?>
                         <div class="row align-items-center border-bottom py-3">
                             <div class="col-md-2">
-                                <img src="<?php echo SITE_URL; ?>assets/images/products/<?php echo $item['imagen'] ?: 'default.jpg'; ?>" 
+                                <?php 
+                                // Para productos personalizados, usar imágenes de la raíz
+                                if ($item['producto_id'] == 999 || $item['producto_id'] == 998) {
+                                    $imagenPath = SITE_URL . $item['imagen'];
+                                } else {
+                                    $imagenPath = SITE_URL . 'assets/images/products/' . ($item['imagen'] ?: 'default.jpg');
+                                }
+                                ?>
+                                <img src="<?php echo $imagenPath; ?>" 
                                      alt="<?php echo $item['nombre']; ?>" class="img-fluid rounded">
                             </div>
                             <div class="col-md-4">
@@ -35,6 +58,12 @@ include 'views/layout/header.php';
                                         <?php if (isset($personalizaciones['tamaño'])): ?>
                                             <span class="badge bg-light text-dark me-1">Tamaño: <?php echo ucfirst($personalizaciones['tamaño']); ?></span>
                                         <?php endif; ?>
+                                        <?php if (isset($personalizaciones['harina']) && $personalizaciones['harina'] !== 'normal'): ?>
+                                            <span class="badge bg-warning text-dark me-1">Harina: <?php echo ucfirst($personalizaciones['harina']); ?></span>
+                                        <?php endif; ?>
+                                        <?php if (isset($personalizaciones['semillas_frutos']) && $personalizaciones['semillas_frutos']): ?>
+                                            <span class="badge bg-info text-dark me-1">Con semillas y frutos secos</span>
+                                        <?php endif; ?>
                                     </small>
                                 <?php endif; ?>
                             </div>
@@ -49,24 +78,24 @@ include 'views/layout/header.php';
                                 </div>
                             </div>
                             <div class="col-md-1 text-center">
-                                <span class="fw-bold" data-subtotal-id="<?php echo $item['id']; ?>"><?php echo formatPrice($item['precio'] * $item['cantidad']); ?></span>
+                                <span class="fw-bold" data-subtotal-id="<?php echo $item['id']; ?>"><?php echo formatPrice($item['subtotal']); ?></span>
                             </div>
                             <div class="col-md-1 text-center">
-                                <a href="<?php echo SITE_URL; ?>cart/remove/<?php echo $item['id']; ?>" 
-                                   class="btn btn-outline-danger btn-sm" 
-                                   onclick="return confirm('¿Estás seguro de eliminar este producto?')">
+                                <button type="button" 
+                                        class="btn btn-outline-danger btn-sm" 
+                                        onclick="confirmDelete(<?php echo $item['id']; ?>)">
                                     <i class="fas fa-trash"></i>
-                                </a>
+                                </button>
                             </div>
                         </div>
                         <?php endforeach; ?>
                         
                         <div class="text-end mt-3">
-                            <a href="<?php echo SITE_URL; ?>cart/clear" 
-                               class="btn btn-outline-secondary me-2"
-                               onclick="return confirm('¿Estás seguro de vaciar el carrito?')">
+                            <button type="button" 
+                                    class="btn btn-outline-secondary me-2"
+                                    onclick="confirmClearCart()">
                                 <i class="fas fa-trash me-2"></i>Vaciar Carrito
-                            </a>
+                            </button>
                             <a href="<?php echo SITE_URL; ?>products" class="btn btn-outline-primary">
                                 <i class="fas fa-shopping-bag me-2"></i>Seguir Comprando
                             </a>
@@ -288,6 +317,44 @@ function contactWhatsAppWithTotal() {
     contactWhatsApp('Hola, quiero hacer un pedido. Mi carrito tiene un total de ' + totalFormateado);
 }
 
+// Función para confirmar eliminación con SweetAlert2
+function confirmDelete(cartId) {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: '¿Deseas eliminar este producto del carrito?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '<?php echo SITE_URL; ?>cart/remove/' + cartId;
+        }
+    });
+}
+
+// Función para confirmar vaciar el carrito con SweetAlert2
+function confirmClearCart() {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: '¿Deseas vaciar todo el carrito de compras?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, vaciar carrito',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '<?php echo SITE_URL; ?>cart/clear';
+        }
+    });
+}
+
 // Cargar cantidad de envases guardada al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     // Intentar cargar desde la sesión del servidor primero
@@ -308,6 +375,33 @@ document.addEventListener('DOMContentLoaded', function() {
             updateTotalWithEnvases();
         }
     }
+    
+    // Mostrar alerta si hay mensaje de sesión después de vaciar el carrito
+    <?php if ($cartSuccessMessage === 'Carrito vaciado'): ?>
+        Swal.fire({
+            title: '¡Carrito vaciado!',
+            text: 'Tu carrito de compras ha sido vaciado exitosamente',
+            icon: 'success',
+            confirmButtonColor: '#E91E63',
+            confirmButtonText: 'Aceptar'
+        });
+    <?php elseif ($cartSuccessMessage === 'Producto eliminado del carrito'): ?>
+        Swal.fire({
+            title: 'Producto eliminado',
+            text: 'El producto ha sido eliminado del carrito',
+            icon: 'success',
+            confirmButtonColor: '#E91E63',
+            confirmButtonText: 'Aceptar'
+        });
+    <?php elseif ($cartErrorMessage): ?>
+        Swal.fire({
+            title: 'Error',
+            text: '<?php echo addslashes($cartErrorMessage); ?>',
+            icon: 'error',
+            confirmButtonColor: '#E91E63',
+            confirmButtonText: 'Aceptar'
+        });
+    <?php endif; ?>
 });
 </script>
 

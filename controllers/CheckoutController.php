@@ -207,6 +207,16 @@ class CheckoutController {
             $infoPago['descuento_envases'] = $descuentoEnvases;
             $infoPago['subtotal_sin_descuento'] = $subtotal; // Subtotal antes de aplicar descuento de envases
             
+            // Guardar información de promoción si existe
+            if ($promotionId) {
+                $promotion = $this->promotionModel->getPromotionById($promotionId);
+                if ($promotion) {
+                    $infoPago['promocion_id'] = $promotionId;
+                    $infoPago['promocion_nombre'] = $promotion['nombre'];
+                    $infoPago['descuento_promocion'] = $totalDiscount ?? ($subtotalConEnvases - $total);
+                }
+            }
+            
             $orderData = [
                 'usuario_id' => $_SESSION['user_id'],
                 'total' => $total,
@@ -249,6 +259,9 @@ class CheckoutController {
     }
 
     public function validatePromo() {
+        // Limpiar cualquier salida previa
+        ob_clean();
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['codigo'])) {
             header('Content-Type: application/json');
             
@@ -276,11 +289,34 @@ class CheckoutController {
             $_SESSION['applied_promo_code'] = $code;
             $_SESSION['applied_promo_id'] = $promotion['id'];
             
-            $discountText = $promotion['tipo'] === 'porcentaje' 
-                ? $promotion['valor_descuento'] . '% de descuento' 
-                : formatPrice($promotion['valor_descuento']) . ' de descuento';
+            // Verificar si es código de cumpleaños
+            $isCumpleCode = stripos($code, 'cumple') !== false || 
+                           stripos($code, 'cumpleaños') !== false ||
+                           strtoupper($code) === 'MI_CUMPLE';
             
-            echo json_encode(['success' => true, 'message' => $discountText]);
+            if ($isCumpleCode) {
+                // Mensaje especial de cumpleaños
+                $discountText = $promotion['tipo'] === 'porcentaje' 
+                    ? $promotion['valor_descuento'] . '% de descuento' 
+                    : formatPrice($promotion['valor_descuento']) . ' de descuento';
+                
+                $cumpleMessage = '<div class="text-center p-3" style="background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); border-radius: 10px; color: white;">';
+                $cumpleMessage .= '<i class="fas fa-birthday-cake fa-3x mb-3" style="color: #ffd700;"></i>';
+                $cumpleMessage .= '<h4 class="mb-2"><strong>¡Feliz Cumpleaños!</strong></h4>';
+                $cumpleMessage .= '<p class="mb-2">De parte de toda la familia de</p>';
+                $cumpleMessage .= '<h5 class="mb-3"><strong>Yogurt Artesanal San Francisco</strong></h5>';
+                $cumpleMessage .= '<p class="mb-0">🎉 ' . $discountText . ' 🎉</p>';
+                $cumpleMessage .= '<p class="mt-2 mb-0"><small>¡Que tengas un día lleno de dulzura y alegría!</small></p>';
+                $cumpleMessage .= '</div>';
+                
+                echo json_encode(['success' => true, 'message' => $discountText, 'special_message' => $cumpleMessage]);
+            } else {
+                $discountText = $promotion['tipo'] === 'porcentaje' 
+                    ? $promotion['valor_descuento'] . '% de descuento' 
+                    : formatPrice($promotion['valor_descuento']) . ' de descuento';
+                
+                echo json_encode(['success' => true, 'message' => $discountText]);
+            }
             exit;
         }
         
@@ -500,6 +536,16 @@ class CheckoutController {
             $infoPago['envases_devueltos'] = $envasesDevueltos;
             $infoPago['descuento_envases'] = $descuentoEnvases;
             $infoPago['subtotal_sin_descuento'] = $subtotal; // Subtotal antes de aplicar descuento de envases
+            
+            // Guardar información de promoción si existe
+            if ($promotionId) {
+                $promotion = $this->promotionModel->getPromotionById($promotionId);
+                if ($promotion) {
+                    $infoPago['promocion_id'] = $promotionId;
+                    $infoPago['promocion_nombre'] = $promotion['nombre'];
+                    $infoPago['descuento_promocion'] = $totalDiscount ?? ($subtotalConEnvases - $total);
+                }
+            }
 
             $orderData = [
                 'usuario_id' => $_SESSION['user_id'],

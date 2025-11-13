@@ -385,7 +385,7 @@
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item text-success" href="<?php echo SITE_URL; ?>products/personalized">
+                            <li><a class="dropdown-item text-success" href="<?php echo SITE_URL; ?>products/category/5">
                                     <i class="fas fa-palette me-1"></i>Productos Personalizados
                                 </a></li>
                         </ul>

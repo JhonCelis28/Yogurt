@@ -100,6 +100,7 @@ include 'views/layout/header.php';
                         <table class="table table-hover" id="ordersTable">
                             <thead>
                                 <tr>
+                                    <th style="display: none;">Prioridad</th>
                                     <th>ID</th>
                                     <th>Cliente</th>
                                     <th>Fecha</th>
@@ -111,7 +112,12 @@ include 'views/layout/header.php';
                             <tbody>
                                 <?php if (!empty($orders)): ?>
                                     <?php foreach ($orders as $order): ?>
+                                    <?php 
+                                    $isFinalState = in_array($order['estado'], ['entregado', 'cancelado']);
+                                    $orderPriority = $isFinalState ? 1 : 0; // 0 = activos primero, 1 = finales al final
+                                    ?>
                                     <tr>
+                                        <td style="display: none;"><?php echo $orderPriority; ?></td>
                                         <td>#<?php echo str_pad($order['id'], 3, '0', STR_PAD_LEFT); ?></td>
                                         <td>
                                             <div>
@@ -311,7 +317,7 @@ function viewOrderDetails(orderId) {
                 });
             }
             
-            // Obtener información de envases devueltos
+            // Obtener información de envases devueltos y promociones
             let infoPago = {};
             try {
                 infoPago = data.info_pago ? JSON.parse(data.info_pago) : {};
@@ -321,18 +327,40 @@ function viewOrderDetails(orderId) {
             let envasesDevueltos = infoPago.envases_devueltos || 0;
             let descuentoEnvases = infoPago.descuento_envases || 0;
             let subtotalSinDescuento = infoPago.subtotal_sin_descuento || 0;
+            let descuentoPromocion = infoPago.descuento_promocion || 0;
+            let promocionNombre = infoPago.promocion_nombre || '';
             
             // Si no hay subtotal_sin_descuento guardado, usar el subtotal calculado
             if (subtotalSinDescuento == 0 || subtotalSinDescuento == data.total) {
                 subtotalSinDescuento = subtotalCalculado;
             }
             
-            // Si hay diferencia entre subtotal y total, y no hay descuento guardado, calcularlo
-            if (descuentoEnvases == 0 && subtotalSinDescuento > data.total) {
-                descuentoEnvases = subtotalSinDescuento - data.total;
-                // Si el descuento es múltiplo de 2000, calcular cantidad de envases
-                if (descuentoEnvases > 0 && descuentoEnvases % 2000 == 0) {
-                    envasesDevueltos = descuentoEnvases / 2000;
+            // Calcular el subtotal después de aplicar descuento de envases
+            let subtotalConEnvases = subtotalSinDescuento - descuentoEnvases;
+            
+            // Si hay descuento de promoción guardado, usarlo
+            // Si no hay descuento guardado pero hay diferencia, verificar si es por envases o promoción
+            if (descuentoPromocion == 0 && subtotalConEnvases > data.total) {
+                let diferencia = subtotalConEnvases - data.total;
+                
+                if (diferencia > 0) {
+                    // Si la diferencia no es múltiplo de 2000, probablemente es una promoción
+                    if (diferencia % 2000 != 0) {
+                        descuentoPromocion = diferencia;
+                    } else if (diferencia % 2000 == 0 && descuentoEnvases == 0) {
+                        // Si es múltiplo de 2000, verificar si podría ser promoción de primera compra
+                        // Si el porcentaje coincide con 15% (promoción común de primera compra), es más probable que sea promoción
+                        let porcentajeDescuento = (diferencia / subtotalConEnvases) * 100;
+                        if (Math.abs(porcentajeDescuento - 15) < 1) {
+                            // Es aproximadamente 15%, probablemente es promoción de primera compra
+                            descuentoPromocion = diferencia;
+                            promocionNombre = '15% de descuento en primera compra';
+                        } else {
+                            // Si no coincide con 15%, probablemente es envases
+                            descuentoEnvases = diferencia;
+                            envasesDevueltos = descuentoEnvases / 2000;
+                        }
+                    }
                 }
             }
             
@@ -399,6 +427,14 @@ function viewOrderDetails(orderId) {
                                     Descuento por envases devueltos (${envasesDevueltos}):
                                 </th>
                                 <th class="text-end">-${formatPrice(descuentoEnvases)}</th>
+                            </tr>
+                            ` : ''}
+                            ${descuentoPromocion > 0 ? `
+                            <tr style="color: #ff6b6b;">
+                                <th colspan="3" class="text-end">
+                                    Descuento por promoción${promocionNombre ? ` (${promocionNombre})` : ''}:
+                                </th>
+                                <th class="text-end">-${formatPrice(descuentoPromocion)}</th>
                             </tr>
                             ` : ''}
                             <tr>
@@ -479,12 +515,21 @@ $(document).ready(function() {
             url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
         },
         pageLength: 25,
-        order: [[2, 'desc']], // Ordenar por fecha descendente
+        order: [[0, 'asc'], [3, 'desc']], // Ordenar primero por prioridad (0=activos, 1=finales), luego por fecha descendente
         columnDefs: [
-            { orderable: false, targets: [5] } // Deshabilitar ordenamiento en acciones
+            { 
+                orderable: false, 
+                targets: [6] // Deshabilitar ordenamiento en acciones
+            },
+            {
+                // Columna oculta para ordenamiento por prioridad (estados finales)
+                targets: [0],
+                visible: false,
+                type: 'num'
+            }
         ],
         initComplete: function() {
-            var column = this.api().column(4);
+            var column = this.api().column(5); // Columna de estado (índice 5 porque agregamos columna de prioridad)
             
             // Crear el select de filtro
             var select = $('<select class="form-select form-select-sm"><option value="">Todos los estados</option></select>')

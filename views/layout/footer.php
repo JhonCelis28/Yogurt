@@ -31,7 +31,7 @@
                         <li><a href="<?php echo SITE_URL; ?>products/category/2" class="text-light text-decoration-none">Yogures con Frutas</a></li>
                         <li><a href="<?php echo SITE_URL; ?>products/category/3" class="text-light text-decoration-none">Postres</a></li>
                         <li><a href="<?php echo SITE_URL; ?>products/category/4" class="text-light text-decoration-none">Tortas</a></li>
-                        <li><a href="<?php echo SITE_URL; ?>products/personalized" class="text-success text-decoration-none">Personalizados</a></li>
+                        <li><a href="<?php echo SITE_URL; ?>products/category/5" class="text-success text-decoration-none">Personalizados</a></li>
                     </ul>
                 </div>
                 
@@ -167,18 +167,26 @@
                             const newSubtotal = price * newValue;
                             subtotalElement.textContent = formatPrice(newSubtotal);
                             
-                            // Recalcular total
+                            // Actualizar total desde el servidor o recalcular
                             if (totalElement) {
-                                let newTotal = 0;
-                                document.querySelectorAll('[data-subtotal-id]').forEach(el => {
-                                    const subtotal = parseFloat(el.textContent.replace(/[^0-9]/g, ''));
-                                    newTotal += subtotal;
-                                });
-                                totalElement.textContent = formatPrice(newTotal);
+                                if (data.total !== undefined) {
+                                    totalElement.textContent = formatPrice(data.total);
+                                } else {
+                                    // Recalcular manualmente si no viene del servidor
+                                    let newTotal = 0;
+                                    document.querySelectorAll('[data-subtotal-id]').forEach(el => {
+                                        const subtotalText = el.textContent.replace(/[^0-9]/g, '');
+                                        const subtotal = parseFloat(subtotalText);
+                                        if (!isNaN(subtotal)) {
+                                            newTotal += subtotal;
+                                        }
+                                    });
+                                    totalElement.textContent = formatPrice(newTotal);
+                                }
                             }
                         }
                         
-                        showAlert('Cantidad actualizada', 'success');
+                        updateCartBadge();
                     } else {
                         showAlert('Error al actualizar cantidad', 'error');
                     }

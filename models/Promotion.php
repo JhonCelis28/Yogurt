@@ -94,8 +94,9 @@ class Promotion {
     }
 
     public function validatePromotionCode($code) {
+        // Buscar código sin importar mayúsculas/minúsculas
         $query = "SELECT * FROM " . $this->table . " 
-                  WHERE codigo = :codigo AND activo = 1 
+                  WHERE UPPER(TRIM(codigo)) = UPPER(TRIM(:codigo)) AND activo = 1 
                   AND (fecha_inicio IS NULL OR fecha_inicio <= NOW()) 
                   AND (fecha_fin IS NULL OR fecha_fin >= NOW())";
         
@@ -173,18 +174,18 @@ class Promotion {
     public function getAutomaticPromotionByAmount($amount) {
         // Buscar promociones automáticas por monto mínimo
         // SOLO promociones con condicion_minima > 0 (promociones por monto)
-        // Excluir promociones de primera compra y promociones que requieren código manual
+        // IMPORTANTE: Excluir TODAS las promociones que tienen código (solo se aplican manualmente)
+        // Excluir también promociones de primera compra, cumpleaños, combos, etc.
         $query = "SELECT * FROM " . $this->table . " 
                   WHERE activo = 1 
                   AND condicion_minima > 0
                   AND condicion_minima <= :amount
-                  AND (codigo IS NULL 
-                       OR codigo = '' 
-                       OR (codigo NOT IN ('PRIMERA_COMPRA', 'PRIMERA', 'PRIMERA15', 'FIN_SEMANA_2X1', 'FIN_SEMANA')
-                           AND UPPER(codigo) NOT LIKE 'PRIMERA%'
-                           AND UPPER(codigo) NOT LIKE 'FIN_SEMANA%'
-                           AND LOWER(nombre) NOT LIKE '%primera compra%'
-                           AND LOWER(nombre) NOT LIKE '%fin de semana%'))
+                  AND (codigo IS NULL OR codigo = '')
+                  AND LOWER(nombre) NOT LIKE '%primera compra%'
+                  AND LOWER(nombre) NOT LIKE '%fin de semana%'
+                  AND LOWER(nombre) NOT LIKE '%cumple%'
+                  AND LOWER(nombre) NOT LIKE '%cumpleaños%'
+                  AND LOWER(nombre) NOT LIKE '%combo%'
                   AND (fecha_inicio IS NULL OR fecha_inicio <= CURDATE()) 
                   AND (fecha_fin IS NULL OR fecha_fin >= CURDATE())
                   ORDER BY condicion_minima DESC, valor_descuento DESC

@@ -36,45 +36,101 @@ include 'views/layout/header.php';
                     <?php endif; ?>
 
                     <div class="mb-4">
-                        <h3 class="text-primary-custom"><?php echo formatPrice($product['precio']); ?></h3>
+                        <h3 class="text-primary-custom" id="product-price"><?php echo formatPrice($product['precio']); ?></h3>
                         <small class="text-muted">Precio por unidad</small>
                     </div>
 
                     <div class="mb-4">
                         <h5>Descripción</h5>
-                        <p><?php echo nl2br($product['descripcion']); ?></p>
+                        <p>
+                            <?php 
+                            // Para el producto ID 6, usar una descripción profesional y llamativa
+                            if ($product['id'] == 6) {
+                                $descripcion = 'Yogures artesanales de textura cremosa, elaborados con ingredientes frescos y naturales. Cada taza ofrece un sabor auténtico que preserva todos los nutrientes. Productos sin conservantes ni saborizantes artificiales.';
+                            } else {
+                                $descripcion = $product['descripcion'];
+                            }
+                            echo nl2br($descripcion);
+                            ?>
+                        </p>
                     </div>
 
                     <?php if ($product['es_personalizable']): ?>
                     <!-- Formulario de personalización -->
+                    <?php 
+                    // Detectar si es una torta (por nombre o categoría)
+                    $esTorta = stripos($product['nombre'], 'torta') !== false || 
+                               stripos($product['categoria_nombre'] ?? '', 'torta') !== false;
+                    
+                    // Detectar si es un yogurt (por nombre o categoría)
+                    $esYogurt = stripos($product['nombre'], 'yogurt') !== false || 
+                                stripos($product['nombre'], 'yogur') !== false ||
+                                stripos($product['categoria_nombre'] ?? '', 'yogurt') !== false ||
+                                stripos($product['categoria_nombre'] ?? '', 'yogur') !== false;
+                    
+                    // Sabores para tortas (chocolate y milkiway se manejan como productos separados)
+                    $sabores_torta = ['ahuyama', 'remolacha', 'espinaca', 'tomate', 'amapola', 'zanahoria', 'mango', 'naranja', 'yogurt', 'vainilla'];
+                    
+                    // Sabores para yogures
+                    $sabores_yogurt = ['coco', 'melocotón', 'fresa', 'arequipe', 'piña', 'guanábana', 'naranja', 'café', 'kiwi', 'mora', 'maracuyá', 'limón', 'lulo', 'mango', 'natural'];
+                    ?>
                     <form id="personalizationForm">
                         <div class="row g-3 mb-4">
                             <div class="col-md-4">
-                                <label class="form-label">Sabor</label>
-                                <select class="form-select" name="sabor" required>
+                                <label class="form-label fw-bold">Sabor</label>
+                                <select class="form-select" name="sabor" id="sabor-select" required>
                                     <option value="">Seleccionar sabor</option>
-                                    <option value="fresa">Fresa</option>
-                                    <option value="mora">Mora</option>
-                                    <option value="mango">Mango</option>
-                                    <option value="maracuya">Maracuyá</option>
-                                    <option value="natural">Natural</option>
-                                    <option value="natural">Limón</option>
-
+                                    <?php if ($esTorta): ?>
+                                        <?php foreach ($sabores_torta as $sabor): ?>
+                                            <option value="<?php echo $sabor; ?>">
+                                                <?php echo ucfirst($sabor); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php elseif ($esYogurt): ?>
+                                        <?php foreach ($sabores_yogurt as $sabor): ?>
+                                            <option value="<?php echo strtolower($sabor); ?>">
+                                                <?php 
+                                                $saborTexto = ucfirst($sabor);
+                                                if (strtolower($sabor) === 'natural') {
+                                                    $saborTexto = 'Natural (sin fruta)';
+                                                }
+                                                echo $saborTexto;
+                                                ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <option value="fresa">Fresa</option>
+                                        <option value="mora">Mora</option>
+                                        <option value="mango">Mango</option>
+                                        <option value="maracuya">Maracuyá</option>
+                                        <option value="natural">Natural</option>
+                                        <option value="limon">Limón</option>
+                                    <?php endif; ?>
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Endulzante</label>
-                                <select class="form-select" name="endulzante" required>
+                                <label class="form-label fw-bold">Endulzante</label>
+                                <select class="form-select" name="endulzante" id="endulzante-select" required>
                                     <option value="">Seleccionar endulzante</option>
-                                    <option value="miel">Miel</option>
-                                    <option value="stevia">Stevia</option>
-                                    <option value="panela">Panela</option>
-                                    <option value="sin_endulzante">Sin endulzante</option>
+                                    <?php if ($esTorta): ?>
+                                        <option value="azucar">Azúcar</option>
+                                        <option value="stevia">Stevia</option>
+                                        <option value="sin_endulzante">Sin endulzante</option>
+                                    <?php elseif ($esYogurt): ?>
+                                        <option value="azucar">Azúcar</option>
+                                        <option value="stevia">Stevia</option>
+                                        <option value="sin_endulzante">Sin endulzante</option>
+                                    <?php else: ?>
+                                        <option value="miel">Miel</option>
+                                        <option value="stevia">Stevia</option>
+                                        <option value="panela">Panela</option>
+                                        <option value="sin_endulzante">Sin endulzante</option>
+                                    <?php endif; ?>
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Nivel de Dulzor</label>
-                                <select class="form-select" name="nivel_dulzor" required>
+                                <label class="form-label fw-bold">Nivel de Dulzor</label>
+                                <select class="form-select" name="nivel_dulzor" id="nivel_dulzor-select" required>
                                     <option value="">Seleccionar nivel</option>
                                     <option value="bajo">Bajo</option>
                                     <option value="medio">Medio</option>
@@ -82,6 +138,33 @@ include 'views/layout/header.php';
                                 </select>
                             </div>
                         </div>
+                        
+                        <?php if ($esTorta): ?>
+                        <!-- Opciones adicionales para tortas -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Tipo de Harina</label>
+                                <select class="form-select" name="harina" id="harina-select">
+                                    <option value="normal">Normal</option>
+                                    <option value="almendras">Almendras (Harina Especial)</option>
+                                    <option value="coco">Coco (Harina Especial)</option>
+                                </select>
+                                <div id="harina-message" class="alert alert-warning mt-2" style="display: none;">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Nota:</strong> Al seleccionar harina especial, el precio aumenta a $50.000
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Semillas y Frutos Secos</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="semillas_frutos" value="1" id="semillas-check" checked>
+                                    <label class="form-check-label" for="semillas-check">
+                                        Incluir semillas (chia, quinua, amapola) y frutos secos
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                     </form>
                     <?php endif; ?>
 
@@ -161,6 +244,47 @@ function changeQuantity(change) {
     }
 }
 
+<?php if ($product['es_personalizable']): ?>
+// Bloquear nivel de dulzor cuando se selecciona "Sin endulzante"
+const endulzanteSelect = document.getElementById('endulzante-select');
+const nivelDulzorSelect = document.getElementById('nivel_dulzor-select');
+
+if (endulzanteSelect && nivelDulzorSelect) {
+    endulzanteSelect.addEventListener('change', function() {
+        if (this.value === 'sin_endulzante') {
+            nivelDulzorSelect.disabled = true;
+            nivelDulzorSelect.value = '';
+            nivelDulzorSelect.removeAttribute('required');
+        } else {
+            nivelDulzorSelect.disabled = false;
+            nivelDulzorSelect.setAttribute('required', 'required');
+        }
+    });
+}
+
+<?php if ($esTorta): ?>
+// Mostrar mensaje y actualizar precio cuando se selecciona harina especial
+const harinaSelect = document.getElementById('harina-select');
+const harinaMessage = document.getElementById('harina-message');
+const productPriceElement = document.getElementById('product-price');
+const precioBase = <?php echo $product['precio']; ?>;
+
+if (harinaSelect && harinaMessage && productPriceElement) {
+    harinaSelect.addEventListener('change', function() {
+        if (this.value === 'almendras' || this.value === 'coco') {
+            harinaMessage.style.display = 'block';
+            // Actualizar precio a $50.000
+            productPriceElement.textContent = '$50.000';
+        } else {
+            harinaMessage.style.display = 'none';
+            // Restaurar precio original
+            productPriceElement.textContent = '<?php echo formatPrice($product['precio']); ?>';
+        }
+    });
+}
+<?php endif; ?>
+<?php endif; ?>
+
 function addProductToCart() {
     const quantity = document.getElementById('quantity').value;
     let personalizaciones = null;
@@ -169,17 +293,38 @@ function addProductToCart() {
     const form = document.getElementById('personalizationForm');
     const formData = new FormData(form);
     
-    // Validar que todos los campos estén llenos
-    if (!formData.get('sabor') || !formData.get('endulzante') || !formData.get('nivel_dulzor')) {
-        alert('Por favor completa todas las opciones de personalización');
+    // Validar campos básicos
+    if (!formData.get('sabor') || !formData.get('endulzante')) {
+        showAlert('Por favor completa todas las opciones requeridas (Sabor y Endulzante)', 'warning');
         return;
     }
     
     personalizaciones = {
         sabor: formData.get('sabor'),
-        endulzante: formData.get('endulzante'),
-        nivel_dulzor: formData.get('nivel_dulzor')
+        endulzante: formData.get('endulzante')
     };
+    
+    // Agregar nivel de dulzor (solo si no es "Sin endulzante")
+    const endulzante = formData.get('endulzante');
+    if (endulzante !== 'sin_endulzante') {
+        if (!formData.get('nivel_dulzor')) {
+            showAlert('Por favor selecciona el nivel de dulzor', 'warning');
+            return;
+        }
+        personalizaciones.nivel_dulzor = formData.get('nivel_dulzor');
+    }
+    
+    <?php if ($esTorta): ?>
+    // Para tortas: agregar harina y semillas
+    const harina = formData.get('harina');
+    if (harina && harina !== 'normal') {
+        personalizaciones.harina = harina;
+    }
+    const semillas = formData.get('semillas_frutos');
+    if (semillas) {
+        personalizaciones.semillas_frutos = true;
+    }
+    <?php endif; ?>
     <?php endif; ?>
     
     addToCart(<?php echo $product['id']; ?>, quantity, personalizaciones);

@@ -255,16 +255,36 @@ include 'views/layout/header.php';
                     <h5 class="mb-0"><i class="fas fa-gift me-2"></i>Código Promocional</h5>
                 </div>
                 <div class="card-body">
+                    <?php if (isset($manualPromotion) && $manualPromotion && isset($manualDiscount) && $manualDiscount > 0): 
+                        // Verificar si es código de cumpleaños
+                        $isCumpleCode = false;
+                        if (isset($_SESSION['applied_promo_code'])) {
+                            $code = strtolower($_SESSION['applied_promo_code']);
+                            $isCumpleCode = stripos($code, 'cumple') !== false || 
+                                           stripos($code, 'cumpleaños') !== false;
+                        }
+                    ?>
+                        <?php if ($isCumpleCode): ?>
+                        <div class="text-center p-3 mb-3" style="background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); border-radius: 10px; color: white;">
+                            <i class="fas fa-birthday-cake fa-3x mb-3" style="color: #ffd700;"></i>
+                            <h4 class="mb-2"><strong>¡Feliz Cumpleaños!</strong></h4>
+                            <p class="mb-2">De parte de toda la familia de</p>
+                            <h5 class="mb-3"><strong>Yogurt Artesanal San Francisco</strong></h5>
+                            <p class="mb-0">🎉 <?php echo $manualPromotion['tipo'] === 'porcentaje' ? $manualPromotion['valor_descuento'] . '% de descuento' : formatPrice($manualPromotion['valor_descuento']) . ' de descuento'; ?> 🎉</p>
+                            <p class="mt-2 mb-0"><small>¡Que tengas un día lleno de dulzura y alegría!</small></p>
+                        </div>
+                        <?php else: ?>
+                        <div class="alert alert-success mb-3">
+                            <i class="fas fa-check-circle me-2"></i>
+                            ¡Código aplicado! <?php echo $manualPromotion['tipo'] === 'porcentaje' ? $manualPromotion['valor_descuento'] . '% de descuento' : formatPrice($manualPromotion['valor_descuento']) . ' de descuento'; ?>
+                        </div>
+                        <?php endif; ?>
+                    <?php else: ?>
                     <div class="input-group mb-3">
                         <input type="text" class="form-control" placeholder="Código promocional" id="promo_code" value="<?php echo isset($_SESSION['applied_promo_code']) ? htmlspecialchars($_SESSION['applied_promo_code']) : ''; ?>">
                         <button class="btn btn-outline-warning" type="button" id="apply_promo">Aplicar</button>
                     </div>
                     <div id="promo_message"></div>
-                    <?php if (isset($manualPromotion) && $manualPromotion && isset($manualDiscount) && $manualDiscount > 0): ?>
-                    <div class="alert alert-success mt-2 mb-0">
-                        <i class="fas fa-check-circle me-2"></i>
-                        ¡Código aplicado! <?php echo $manualPromotion['tipo'] === 'porcentaje' ? $manualPromotion['valor_descuento'] . '% de descuento' : formatPrice($manualPromotion['valor_descuento']) . ' de descuento'; ?>
-                    </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -274,11 +294,30 @@ include 'views/layout/header.php';
                     <h5 class="mb-0"><i class="fas fa-gift me-2"></i>Promoción<?php echo ((isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0) && (isset($automaticPromotion) && $automaticPromotion && isset($autoDiscount) && $autoDiscount > 0)) ? 'es' : ''; ?> Aplicada<?php echo ((isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0) && (isset($automaticPromotion) && $automaticPromotion && isset($autoDiscount) && $autoDiscount > 0)) ? 's' : ''; ?></h5>
                 </div>
                 <div class="card-body">
-                    <?php if (isset($manualPromotion) && $manualPromotion && isset($manualDiscount) && $manualDiscount > 0): ?>
-                    <div class="alert alert-success mb-0">
-                        <i class="fas fa-check-circle me-2"></i>
-                        <strong><?php echo htmlspecialchars($manualPromotion['nombre']); ?></strong> aplicada con código: <code><?php echo htmlspecialchars($_SESSION['applied_promo_code'] ?? ''); ?></code>
-                    </div>
+                    <?php if (isset($manualPromotion) && $manualPromotion && isset($manualDiscount) && $manualDiscount > 0): 
+                        // Verificar si es código de cumpleaños
+                        $isCumpleCode = false;
+                        if (isset($_SESSION['applied_promo_code'])) {
+                            $code = strtolower($_SESSION['applied_promo_code']);
+                            $isCumpleCode = stripos($code, 'cumple') !== false || 
+                                           stripos($code, 'cumpleaños') !== false;
+                        }
+                    ?>
+                        <?php if ($isCumpleCode): ?>
+                        <div class="text-center p-3 mb-0" style="background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); border-radius: 10px; color: white;">
+                            <i class="fas fa-birthday-cake fa-3x mb-3" style="color: #ffd700;"></i>
+                            <h4 class="mb-2"><strong>¡Feliz Cumpleaños!</strong></h4>
+                            <p class="mb-2">De parte de toda la familia de</p>
+                            <h5 class="mb-3"><strong>Yogurt Artesanal San Francisco</strong></h5>
+                            <p class="mb-0">🎉 <?php echo $manualPromotion['tipo'] === 'porcentaje' ? $manualPromotion['valor_descuento'] . '% de descuento' : formatPrice($manualPromotion['valor_descuento']) . ' de descuento'; ?> 🎉</p>
+                            <p class="mt-2 mb-0"><small>¡Que tengas un día lleno de dulzura y alegría!</small></p>
+                        </div>
+                        <?php else: ?>
+                        <div class="alert alert-success mb-0">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong><?php echo htmlspecialchars($manualPromotion['nombre']); ?></strong> aplicada con código: <code><?php echo htmlspecialchars($_SESSION['applied_promo_code'] ?? ''); ?></code>
+                        </div>
+                        <?php endif; ?>
                     <?php elseif (isset($firstOrderPromotion) && $firstOrderPromotion && isset($firstDiscount) && $firstDiscount > 0): ?>
                     <div class="alert alert-success mb-2">
                         <i class="fas fa-check-circle me-2"></i>
@@ -370,7 +409,76 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Canvas Confetti Library - Cargar siempre para que esté disponible
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+<script>
+// Función para lanzar confeti de cumpleaños (disponible globalmente)
+function launchBirthdayConfetti() {
+    if (typeof confetti === 'undefined') {
+        console.error('Confetti library not loaded');
+        // Intentar cargar la librería manualmente
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js';
+        script.onload = function() {
+            launchBirthdayConfetti();
+        };
+        document.head.appendChild(script);
+        return;
+    }
+    
+    const duration = 3000; // 3 segundos
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    function randomInRange(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    const interval = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+            return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+        
+        // Confeti desde la izquierda
+        confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+        });
+        
+        // Confeti desde la derecha
+        confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+        });
+        
+        // Confeti desde el centro
+        confetti({
+            ...defaults,
+            particleCount: particleCount * 0.5,
+            origin: { x: randomInRange(0.4, 0.6), y: Math.random() - 0.2 }
+        });
+    }, 250);
+    
+    // Explosión inicial grande
+    setTimeout(() => {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#ff6b9d', '#c44569', '#ffd700', '#ff6b6b', '#ffa500', '#ff69b4']
+        });
+    }, 100);
+}
+</script>
+
 <?php if (!isset($manualPromotion) || !$manualPromotion || $manualDiscount == 0): ?>
+<script>
 const applyPromoBtn = document.getElementById('apply_promo');
 if (applyPromoBtn) {
     applyPromoBtn.addEventListener('click', function() {
@@ -382,6 +490,9 @@ if (applyPromoBtn) {
             return;
         }
         
+        // Mostrar mensaje de carga
+        promoMessage.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin me-2"></i>Validando código...</div>';
+        
         // Validar código promocional con el servidor
         fetch('<?php echo SITE_URL; ?>checkout/validate-promo', {
             method: 'POST',
@@ -390,25 +501,149 @@ if (applyPromoBtn) {
             },
             body: 'codigo=' + encodeURIComponent(promoCode)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servidor: ' + response.status);
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log('Respuesta del servidor:', data); // Debug
             if (data.success) {
-                promoMessage.innerHTML = '<div class="alert alert-success">¡Código aplicado! ' + data.message + '</div>';
-                // Recargar la página para aplicar el descuento
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+                // Si hay un mensaje especial (para cumpleaños), mostrarlo
+                if (data.special_message) {
+                    promoMessage.innerHTML = data.special_message;
+                    // Ocultar el input y botón, y mostrar el mensaje en el lugar correcto
+                    const promoInput = document.getElementById('promo_code');
+                    const applyBtn = document.getElementById('apply_promo');
+                    if (promoInput) promoInput.style.display = 'none';
+                    if (applyBtn) applyBtn.style.display = 'none';
+                    
+                    // Lanzar confeti de cumpleaños inmediatamente
+                    console.log('Intentando lanzar confeti...');
+                    console.log('confetti disponible:', typeof confetti !== 'undefined');
+                    console.log('launchBirthdayConfetti disponible:', typeof launchBirthdayConfetti === 'function');
+                    
+                    // Intentar usar la función global primero
+                    if (typeof launchBirthdayConfetti === 'function') {
+                        console.log('Usando launchBirthdayConfetti()');
+                        launchBirthdayConfetti();
+                    } else if (typeof confetti !== 'undefined') {
+                        console.log('Usando confetti directamente');
+                        // Ejecutar confeti directamente
+                        const duration = 3000;
+                        const animationEnd = Date.now() + duration;
+                        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+                        function randomInRange(min, max) {
+                            return Math.random() * (max - min) + min;
+                        }
+
+                        // Explosión inicial grande
+                        confetti({
+                            particleCount: 100,
+                            spread: 70,
+                            origin: { y: 0.6 },
+                            colors: ['#ff6b9d', '#c44569', '#ffd700', '#ff6b6b', '#ffa500', '#ff69b4']
+                        });
+
+                        const interval = setInterval(function() {
+                            const timeLeft = animationEnd - Date.now();
+
+                            if (timeLeft <= 0) {
+                                return clearInterval(interval);
+                            }
+
+                            const particleCount = 50 * (timeLeft / duration);
+                            
+                            // Confeti desde la izquierda
+                            confetti({
+                                ...defaults,
+                                particleCount,
+                                origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+                            });
+                            
+                            // Confeti desde la derecha
+                            confetti({
+                                ...defaults,
+                                particleCount,
+                                origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+                            });
+                            
+                            // Confeti desde el centro
+                            confetti({
+                                ...defaults,
+                                particleCount: particleCount * 0.5,
+                                origin: { x: randomInRange(0.4, 0.6), y: Math.random() - 0.2 }
+                            });
+                        }, 250);
+                    } else {
+                        console.error('Confetti library not loaded, esperando...');
+                        // Esperar a que se cargue la librería
+                        let attempts = 0;
+                        const checkConfetti = setInterval(() => {
+                            attempts++;
+                            if (typeof confetti !== 'undefined') {
+                                clearInterval(checkConfetti);
+                                console.log('Confetti cargado, lanzando...');
+                                if (typeof launchBirthdayConfetti === 'function') {
+                                    launchBirthdayConfetti();
+                                }
+                            } else if (attempts > 30) {
+                                clearInterval(checkConfetti);
+                                console.error('No se pudo cargar la librería de confeti después de 3 segundos');
+                            }
+                        }, 100);
+                    }
+                    
+                    // Recargar la página después de 3 segundos para aplicar el descuento
+                    // El mensaje permanecerá visible después de recargar porque está en el PHP
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+                } else {
+                    promoMessage.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>¡Código aplicado! ' + data.message + '</div>';
+                    // Recargar la página para aplicar el descuento
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
             } else {
-                promoMessage.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+                promoMessage.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>' + data.message + '</div>';
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            promoMessage.innerHTML = '<div class="alert alert-danger">Error al validar el código promocional</div>';
+            console.error('Error al validar código promocional:', error);
+            promoMessage.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Error al validar el código promocional. Por favor intenta de nuevo.</div>';
         });
     });
 }
-<?php endif; ?>
 </script>
+<?php endif; ?>
+
+<?php 
+// Verificar si hay código de cumpleaños aplicado para lanzar confeti al cargar
+$shouldLaunchConfetti = false;
+if (isset($manualPromotion) && $manualPromotion && isset($manualDiscount) && $manualDiscount > 0) {
+    if (isset($_SESSION['applied_promo_code'])) {
+        $code = strtolower($_SESSION['applied_promo_code']);
+        $shouldLaunchConfetti = stripos($code, 'cumple') !== false || 
+                               stripos($code, 'cumpleaños') !== false;
+    }
+}
+?>
+
+<?php if ($shouldLaunchConfetti): ?>
+<script>
+// Lanzar confeti cuando se carga la página si hay código de cumpleaños
+window.addEventListener('load', function() {
+    setTimeout(() => {
+        if (typeof launchBirthdayConfetti === 'function') {
+            launchBirthdayConfetti();
+        }
+    }, 500);
+});
+</script>
+<?php endif; ?>
 
 <?php include 'views/layout/footer.php'; ?>

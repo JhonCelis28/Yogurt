@@ -31,12 +31,21 @@ class CartController {
 
     public function add() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            header('Content-Type: application/json; charset=utf-8');
+            
             $productId = (int)$_POST['product_id'];
             $quantity = (int)($_POST['quantity'] ?? 1);
             $personalizaciones = $_POST['personalizaciones'] ?? null;
             
+            // personalizaciones ya viene como JSON string desde el cliente
+            // Solo validar que sea JSON válido si está presente
             if ($personalizaciones) {
-                $personalizaciones = json_encode($personalizaciones);
+                $decoded = json_decode($personalizaciones, true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    echo json_encode(['success' => false, 'message' => 'Datos de personalización inválidos']);
+                    exit;
+                }
+                // Mantener como JSON string para guardar en BD
             }
 
             if ($this->cartModel->addToCart($_SESSION['user_id'], $productId, $quantity, $personalizaciones)) {
@@ -44,6 +53,7 @@ class CartController {
             } else {
                 echo json_encode(['success' => false, 'message' => 'Error al agregar producto']);
             }
+            exit;
         }
     }
 
@@ -69,11 +79,14 @@ class CartController {
 
     public function updateQuantity() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            header('Content-Type: application/json; charset=utf-8');
+            
             $cartId = (int)$_POST['cart_id'];
             $quantity = (int)$_POST['quantity'];
 
             if ($this->cartModel->updateQuantity($cartId, $quantity)) {
-                echo json_encode(['success' => true]);
+                $total = $this->cartModel->getCartTotal($_SESSION['user_id']);
+                echo json_encode(['success' => true, 'total' => $total]);
             } else {
                 echo json_encode(['success' => false]);
             }

@@ -24,16 +24,25 @@ include 'views/layout/header.php';
                         <a href="<?php echo SITE_URL; ?>products" class="list-group-item list-group-item-action">
                             <i class="fas fa-th-large me-2"></i>Todos los Productos
                         </a>
-                        <?php foreach ($categories as $cat): ?>
-                        <a href="<?php echo SITE_URL; ?>products/category/<?php echo $cat['id']; ?>" 
-                           class="list-group-item list-group-item-action <?php echo $cat['id'] == $category['id'] ? 'active' : ''; ?>">
-                            <i class="fas fa-tag me-2"></i><?php echo $cat['nombre']; ?>
-                        </a>
+                        <?php 
+                        $personalizada = null;
+                        foreach ($categories as $cat): 
+                            if (strtolower($cat['nombre']) === 'productos personalizados'):
+                                $personalizada = $cat;
+                                continue;
+                            endif;
+                        ?>
+                            <a href="<?php echo SITE_URL; ?>products/category/<?php echo $cat['id']; ?>" 
+                               class="list-group-item list-group-item-action <?php echo $cat['id'] == $category['id'] ? 'active' : ''; ?>">
+                                <i class="fas fa-tag me-2"></i><?php echo $cat['nombre']; ?>
+                            </a>
                         <?php endforeach; ?>
-                        <a href="<?php echo SITE_URL; ?>products/personalized" 
-                           class="list-group-item list-group-item-action text-success">
-                            <i class="fas fa-palette me-2"></i>Productos Personalizados
-                        </a>
+                        <?php if ($personalizada): ?>
+                            <a href="<?php echo SITE_URL; ?>products/category/<?php echo $personalizada['id']; ?>" 
+                               class="list-group-item list-group-item-action text-success <?php echo $personalizada['id'] == $category['id'] ? 'active' : ''; ?>">
+                                <i class="fas fa-palette me-2"></i><?php echo $personalizada['nombre']; ?>
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
