@@ -1,4 +1,6 @@
 <?php
+// Definición de la URL base de la aplicación
+define('APP_NETWORK_URL', 'http://192.168.18.16/Proyectoyogurt/');
 // Configuración general del sitio
 define('SITE_NAME', 'Yogurt Artesanal San Francisco');
 
@@ -16,7 +18,7 @@ define('SITE_URL', $protocol . '://' . $host . $basePath . '/');
 define('ADMIN_EMAIL', 'admin@yogurtsanfrancisco.com');
 
 // Configuración de redes sociales
-define('WHATSAPP_NUMBER', '573001234567');
+define('WHATSAPP_NUMBER', '573112668752');
 define('FACEBOOK_URL', 'https://facebook.com/yogurtsanfrancisco');
 define('INSTAGRAM_URL', 'https://instagram.com/yogurtsanfrancisco');
 define('TWITTER_URL', 'https://twitter.com/yogurtsanfrancisco');

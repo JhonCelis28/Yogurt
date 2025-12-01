@@ -1,0 +1,337 @@
+================================================================================
+    PRESENTACIÓN DEL PROYECTO: SISTEMA DE E-COMMERCE
+    YOGURT ARTESANAL SAN FRANCISCO
+================================================================================
+
+PROYECTO ACADÉMICO - ANÁLISIS Y DESARROLLO DE SOFTWARE
+Presentado por: [Tu Nombre]
+Fecha: [Fecha Actual]
+
+================================================================================
+1. INTRODUCCIÓN
+================================================================================
+
+Este proyecto consiste en el desarrollo de una plataforma web de e-commerce 
+completa para "Yogurt Artesanal San Francisco", un emprendimiento familiar 
+dedicado a la producción y comercialización de productos lácteos artesanales.
+
+El sistema permite gestionar de manera integral las operaciones comerciales 
+del negocio, desde la presentación de productos hasta la gestión de pedidos 
+y administración del inventario.
+
+NOTA: Este es un proyecto académico y familiar que actualmente se encuentra 
+en fase de desarrollo, no está operacional en producción.
+
+================================================================================
+2. DESCRIPCIÓN DEL PROYECTO
+================================================================================
+
+2.1. Objetivo Principal
+-----------------------
+Desarrollar una solución tecnológica completa que permita a Yogurt Artesanal 
+San Francisco:
+
+- Presentar su catálogo de productos de manera atractiva y profesional
+- Gestionar pedidos de manera eficiente
+- Administrar inventario, usuarios y promociones
+- Facilitar la comunicación con clientes
+- Proporcionar una experiencia de compra moderna y responsive
+
+2.2. Alcance del Proyecto
+--------------------------
+El sistema cubre las siguientes áreas funcionales:
+
+✓ Gestión de productos y categorías
+✓ Carrito de compras interactivo
+✓ Sistema de pedidos completo
+✓ Panel de administración
+✓ Gestión de usuarios y clientes
+✓ Sistema de promociones y descuentos
+✓ Productos personalizables
+✓ Generación de facturas/recibos
+✓ Integración con WhatsApp para pedidos
+
+================================================================================
+3. TECNOLOGÍAS UTILIZADAS
+================================================================================
+
+3.1. Backend (Servidor)
+------------------------
+- PHP 7.4+: Lenguaje de programación del lado del servidor
+- MySQL: Base de datos relacional para almacenamiento de información
+- Arquitectura MVC (Modelo-Vista-Controlador): Para organización del código
+
+3.2. Frontend (Interfaz de Usuario)
+------------------------------------
+- HTML5: Estructura de las páginas
+- CSS3: Estilos y diseño responsive
+- JavaScript: Interactividad y funcionalidades dinámicas
+- Bootstrap 5: Framework CSS para diseño responsive
+- Font Awesome: Iconografía
+- SweetAlert2: Alertas y notificaciones modernas
+- DataTables: Tablas interactivas en el panel de administración
+
+3.3. Herramientas y Librerías
+-------------------------------
+- PDO (PHP Data Objects): Para conexión segura a la base de datos
+- jQuery: Simplificación de JavaScript
+- Google Fonts (Poppins): Tipografía moderna
+
+================================================================================
+4. CARACTERÍSTICAS PRINCIPALES DEL SISTEMA
+================================================================================
+
+4.1. Para Clientes Finales
+---------------------------
+
+a) Catálogo de Productos
+   - Visualización de productos por categorías
+   - Búsqueda y filtrado
+   - Detalles completos de cada producto
+   - Galería de imágenes
+
+b) Productos Personalizables
+   - Sistema de personalización de yogures
+   - Selección de sabores, endulzantes, nivel de dulzor
+   - Opciones especiales (harinas alternativas, semillas, etc.)
+
+c) Carrito de Compras
+   - Agregar/eliminar productos
+   - Modificar cantidades
+   - Cálculo automático de totales
+   - Descuentos por envases devueltos
+   - Aplicación de códigos promocionales
+
+d) Sistema de Pedidos
+   - Proceso de checkout completo
+   - Múltiples métodos de pago
+   - Seguimiento de pedidos
+   - Historial de compras
+
+e) Perfil de Usuario
+   - Gestión de datos personales
+   - Direcciones de entrega
+   - Historial de pedidos
+   - Impresión de facturas
+
+4.2. Para Administradores
+--------------------------
+
+a) Panel de Administración
+   - Dashboard con estadísticas
+   - Gestión completa de productos
+   - Gestión de categorías
+   - Control de inventario
+
+b) Gestión de Pedidos
+   - Visualización de todos los pedidos
+   - Cambio de estados (pendiente, confirmado, preparando, enviado, entregado)
+   - Filtros por estado
+   - Ordenamiento inteligente (pedidos finales al final)
+   - Detalles completos de cada pedido
+   - Impresión de pedidos
+
+c) Gestión de Usuarios
+   - Listado de clientes
+   - Activación/desactivación de cuentas
+   - Visualización de pedidos por cliente
+
+d) Sistema de Promociones
+   - Creación de promociones
+   - Códigos promocionales
+   - Descuentos por porcentaje o valor fijo
+   - Promociones automáticas (primera compra)
+   - Promociones especiales (cumpleaños)
+
+e) Gestión de Contactos
+   - Mensajes recibidos del formulario de contacto
+   - Marcado de mensajes como leídos
+   - Respuesta a consultas
+
+================================================================================
+5. ESTRUCTURA DEL PROYECTO
+================================================================================
+
+El proyecto sigue una arquitectura MVC (Modelo-Vista-Controlador) que 
+facilita el mantenimiento y la escalabilidad:
+
+📁 controllers/
+   - Gestiona la lógica de negocio y el flujo de la aplicación
+   - Ejemplos: CartController, AdminController, ProductController
+
+📁 models/
+   - Representa los datos y la lógica de acceso a la base de datos
+   - Ejemplos: Product, Order, User, Cart
+
+📁 views/
+   - Contiene las plantillas HTML y la presentación
+   - Organizado por módulos: admin, cart, checkout, products, etc.
+
+📁 config/
+   - Archivos de configuración
+   - Conexión a base de datos
+   - Configuraciones generales
+
+📁 assets/
+   - Recursos estáticos (imágenes, CSS, JavaScript)
+
+================================================================================
+6. FUNCIONALIDADES DESTACADAS
+================================================================================
+
+6.1. Sistema de Personalización de Productos
+--------------------------------------------
+Permite a los clientes crear productos personalizados seleccionando:
+- Sabor del yogurt
+- Tipo de endulzante
+- Nivel de dulzor
+- Tamaño del producto
+- Opciones especiales (harinas alternativas, semillas, frutos secos)
+
+6.2. Sistema de Descuentos Inteligente
+---------------------------------------
+- Descuento por envases devueltos ($2.000 por envase)
+- Códigos promocionales manuales
+- Promociones automáticas (15% primera compra)
+- Promociones especiales (cumpleaños)
+- Cálculo automático de descuentos combinados
+
+6.3. Gestión de Estados de Pedidos
+-----------------------------------
+Sistema completo de seguimiento:
+- Pendiente → Confirmado → Preparando → Enviado → Entregado
+- Estados finales (Entregado/Cancelado) se ordenan automáticamente al final
+- Notificaciones visuales con badges de colores
+
+6.4. Interfaz Responsive
+-------------------------
+Diseño completamente adaptable a:
+- Dispositivos móviles
+- Tablets
+- Computadoras de escritorio
+- Diferentes tamaños de pantalla
+
+6.5. Integración con WhatsApp
+------------------------------
+Botón flotante que permite contactar directamente por WhatsApp con 
+información del pedido prellenada.
+
+================================================================================
+7. SEGURIDAD Y BUENAS PRÁCTICAS
+================================================================================
+
+✓ Validación de datos en servidor y cliente
+✓ Protección contra inyección SQL (usando PDO con prepared statements)
+✓ Hash de contraseñas (password_hash)
+✓ Control de sesiones
+✓ Sanitización de inputs
+✓ Control de acceso por roles (cliente/admin)
+✓ Validación de permisos en cada acción administrativa
+
+================================================================================
+8. ESTADO ACTUAL DEL PROYECTO
+================================================================================
+
+8.1. Funcionalidades Completadas
+---------------------------------
+✅ Sistema de autenticación (login/registro)
+✅ Catálogo de productos completo
+✅ Sistema de carrito de compras
+✅ Proceso de checkout
+✅ Panel de administración completo
+✅ Gestión de pedidos
+✅ Sistema de promociones
+✅ Productos personalizables
+✅ Generación de facturas
+✅ Diseño responsive
+✅ Integración con WhatsApp
+
+8.2. Estado del Proyecto
+-------------------------
+El proyecto se encuentra en fase de desarrollo académico. Todas las 
+funcionalidades principales están implementadas y probadas en entorno 
+local. El sistema no está actualmente operacional en producción.
+
+8.3. Próximos Pasos Sugeridos
+-------------------------------
+- Pruebas de carga y rendimiento
+- Optimización de consultas a base de datos
+- Implementación de caché
+- Mejoras en la experiencia de usuario
+- Integración con pasarelas de pago reales
+- Sistema de notificaciones por email
+- Dashboard con métricas y reportes avanzados
+
+================================================================================
+9. DESAFÍOS TÉCNICOS RESUELTOS
+================================================================================
+
+Durante el desarrollo se enfrentaron y resolvieron varios desafíos:
+
+1. Sistema de Personalización Complejo
+   - Implementación de un sistema flexible que permite múltiples combinaciones
+   - Almacenamiento eficiente de personalizaciones en formato JSON
+
+2. Cálculo de Descuentos Múltiples
+   - Lógica para combinar diferentes tipos de descuentos
+   - Priorización y aplicación correcta de promociones
+
+3. Gestión de Estados de Pedidos
+   - Sistema que ordena automáticamente pedidos finales
+   - Filtros dinámicos con DataTables
+
+4. Diseño Responsive Completo
+   - Adaptación de todas las vistas a diferentes dispositivos
+   - Optimización de imágenes y recursos
+
+================================================================================
+10. APRENDIZAJES Y COMPETENCIAS DESARROLLADAS
+================================================================================
+
+Este proyecto ha permitido desarrollar y fortalecer competencias en:
+
+✓ Programación orientada a objetos en PHP
+✓ Arquitectura MVC
+✓ Diseño y desarrollo de bases de datos relacionales
+✓ Desarrollo frontend con HTML, CSS y JavaScript
+✓ Integración de librerías y frameworks
+✓ Diseño responsive y experiencia de usuario
+✓ Gestión de proyectos de software
+✓ Resolución de problemas técnicos complejos
+✓ Buenas prácticas de programación y seguridad
+
+================================================================================
+11. CONCLUSIÓN
+================================================================================
+
+Este proyecto representa una solución tecnológica completa para un 
+emprendimiento familiar, demostrando la capacidad de desarrollar sistemas 
+de e-commerce funcionales y profesionales.
+
+Aunque actualmente es un proyecto académico, el sistema está diseñado 
+con estándares profesionales y puede ser adaptado para uso en producción 
+real con las configuraciones y ajustes necesarios.
+
+El desarrollo de este proyecto ha sido una experiencia valiosa que 
+combina conocimientos técnicos con la resolución de necesidades reales 
+de un negocio, preparando para futuros desafíos en el desarrollo de 
+software empresarial.
+
+================================================================================
+12. INFORMACIÓN TÉCNICA ADICIONAL
+================================================================================
+
+Versión del Proyecto: 1.0
+Última Actualización: Noviembre 2025
+Lenguaje Principal: PHP
+Base de Datos: MySQL
+Arquitectura: MVC
+Framework Frontend: Bootstrap 5
+Control de Versiones: Git/GitHub
+
+================================================================================
+                                FIN DEL DOCUMENTO
+================================================================================
+
+
+
